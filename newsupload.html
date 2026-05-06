@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexi Admin Panel</title>
+
+<style>
+:root { --blue:#003366; --green:#2E8B57; --bg:#f4f7f6; }
+
+body {
+    margin:0;
+    font-family:'Segoe UI', sans-serif;
+    background:var(--bg);
+}
+
+header {
+    background:var(--blue);
+    color:white;
+    padding:15px;
+    font-weight:bold;
+    text-align:center;
+}
+
+.container {
+    max-width:700px;
+    margin:20px auto;
+    width:95%;
+}
+
+.card {
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
+    border-top:5px solid var(--green);
+}
+
+input, textarea {
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+button {
+    background:var(--green);
+    color:white;
+    border:none;
+    padding:12px;
+    border-radius:6px;
+    cursor:pointer;
+    width:100%;
+    font-weight:bold;
+}
+
+button:disabled {
+    opacity:0.6;
+    cursor:not-allowed;
+}
+
+.news-item {
+    border-bottom:1px solid #eee;
+    padding:10px 0;
+}
+
+.news-item img {
+    width:100%;
+    max-height:150px;
+    object-fit:cover;
+    border-radius:6px;
+}
+
+.actions {
+    display:flex;
+    gap:10px;
+    margin-top:8px;
+}
+
+.delete-btn {
+    background:#b22222;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    Flexi Admin Panel
+</header>
+
+<div class="container">
+
+    <!-- ADD NEWS -->
+    <div class="card">
+        <h3>Add News</h3>
+        <input type="text" id="title" placeholder="News Title">
+        
+        <!-- ✅ FILE INPUT -->
+        <input type="file" id="imageFile" accept="image/*">
+        
+        <textarea id="content" rows="4" placeholder="Full Content"></textarea>
+        <button id="publishBtn" onclick="addNews()">Publish News</button>
+    </div>
+
+    <!-- NEWS LIST -->
+    <div class="card">
+        <h3>Manage News</h3>
+        <div id="newsList"></div>
+    </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+    getFirestore, collection, addDoc, getDocs,
+    deleteDoc, doc, updateDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+    authDomain: "waec2026jamb2027.firebaseapp.com",
+    projectId: "waec2026jamb2027",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 🔥 CLOUDINARY CONFIG (FILL THIS)
+const CLOUD_NAME = "dwmbgd9jy";
+const UPLOAD_PRESET = "my_preset_123";
+
+// 📤 Upload Image
+async function uploadImage(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+    return data.secure_url;
+}
+
+// ➕ ADD NEWS
+window.addNews = async () => {
+    const title = document.getElementById("title").value;
+    const content = document.getElementById("content").value;
+    const file = document.getElementById("imageFile").files[0];
+    const btn = document.getElementById("publishBtn");
+
+    if (!title || !content) return alert("Fill all fields");
+
+    let imageUrl = "";
+
+    try {
+        btn.innerText = "Uploading...";
+        btn.disabled = true;
+
+        if (file) {
+            imageUrl = await uploadImage(file);
+        }
+
+        await addDoc(collection(db, "news"), {
+            title,
+            content,
+            imageUrl,
+            timestamp: serverTimestamp()
+        });
+
+        alert("News added!");
+        loadNews();
+
+        document.getElementById("title").value = "";
+        document.getElementById("content").value = "";
+        document.getElementById("imageFile").value = "";
+
+    } catch (err) {
+        console.error(err);
+        alert("Upload failed");
+    } finally {
+        btn.innerText = "Publish News";
+        btn.disabled = false;
+    }
+};
+
+// 📥 LOAD NEWS
+async function loadNews() {
+    const snap = await getDocs(collection(db, "news"));
+    const list = document.getElementById("newsList");
+    list.innerHTML = "";
+
+    snap.forEach(docSnap => {
+        const data = docSnap.data();
+        const id = docSnap.id;
+
+        const div = document.createElement("div");
+        div.className = "news-item";
+
+        div.innerHTML = `
+            <img src="${data.imageUrl || 'https://via.placeholder.com/300'}">
+            <b>${data.title}</b>
+            <p>${(data.content || '').substring(0,100)}...</p>
+
+            <div class="actions">
+                <button onclick="editNews('${id}', \`${data.title}\`, \`${data.content}\`, \`${data.imageUrl}\`)">Edit</button>
+                <button class="delete-btn" onclick="deleteNews('${id}')">Delete</button>
+            </div>
+        `;
+
+        list.appendChild(div);
+    });
+}
+
+// ❌ DELETE
+window.deleteNews = async (id) => {
+    if (!confirm("Delete this news?")) return;
+    await deleteDoc(doc(db, "news", id));
+    loadNews();
+};
+
+// ✏️ EDIT
+window.editNews = async (id, oldTitle, oldContent, oldImage) => {
+    const title = prompt("Edit Title", oldTitle);
+    const content = prompt("Edit Content", oldContent);
+    const imageUrl = prompt("Edit Image URL", oldImage);
+
+    if (!title || !content) return;
+
+    await updateDoc(doc(db, "news", id), {
+        title,
+        content,
+        imageUrl
+    });
+
+    loadNews();
+};
+
+// INIT
+loadNews();
+
+</script>
+
+</body>
+</html>

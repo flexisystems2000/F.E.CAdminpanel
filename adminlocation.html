@@ -1,0 +1,175 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexi Admin | Centers</title><style>
+:root { --blue:#003366; --green:#2E8B57; --bg:#f4f7f6; }
+
+body {
+    margin:0;
+    font-family:'Segoe UI', sans-serif;
+    background:var(--bg);
+}
+
+header {
+    background:var(--blue);
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-weight:bold;
+    border-bottom:4px solid var(--green);
+}
+
+.container {
+    max-width:600px;
+    margin:20px auto;
+    width:90%;
+}
+
+.card {
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+
+input, select {
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+button {
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-add { background:var(--green); color:white; width:100%; }
+.btn-edit { background:#FFD700; }
+.btn-delete { background:#e74c3c; color:white; }
+
+.center-item {
+    border-bottom:1px solid #eee;
+    padding:10px 0;
+}
+
+.center-name { font-weight:bold; color:var(--blue); }
+
+.actions {
+    margin-top:5px;
+    display:flex;
+    gap:10px;
+}
+</style></head><body><header>FLEXI ADMIN PANEL</header><div class="container"><!-- ADD CENTER --><div class="card">
+    <h3>Add New Center</h3>
+    <input type="text" id="name" placeholder="Center Name">
+    <input type="text" id="address" placeholder="Address"><select id="lga">
+    <option value="">Select LGA</option>
+    <option>Agege</option><option>Ajeromi-Ifelodun</option>
+    <option>Alimosho</option><option>Amuwo-Odofin</option>
+    <option>Apapa</option><option>Badagry</option>
+    <option>Epe</option><option>Eti-Osa</option>
+    <option>Ibeju-Lekki</option><option>Ifako-Ijaiye</option>
+    <option>Ikeja</option><option>Ikorodu</option>
+    <option>Kosofe</option><option>Lagos Island</option>
+    <option>Lagos Mainland</option><option>Mushin</option>
+    <option>Ojo</option><option>Oshodi-Isolo</option>
+    <option>Shomolu</option><option>Surulere</option>
+</select>
+
+<button class="btn-add" onclick="addCenter()">Add Center</button>
+
+</div><!-- LIST --><div class="card">
+    <h3>All Centers</h3>
+    <div id="list">Loading...</div>
+</div></div><script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+    getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+    authDomain: "waec2026jamb2027.firebaseapp.com",
+    projectId: "waec2026jamb2027",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// LOAD CENTERS
+async function loadCenters() {
+    const list = document.getElementById("list");
+    list.innerHTML = "Loading...";
+
+    const snap = await getDocs(collection(db, "centers"));
+    list.innerHTML = "";
+
+    snap.forEach(d => {
+        const data = d.data();
+
+        list.innerHTML += `
+        <div class="center-item">
+            <div class="center-name">${data.name}</div>
+            <div>${data.address}</div>
+            <small>${data.lga}</small>
+
+            <div class="actions">
+                <button class="btn-edit" onclick="editCenter('${d.id}','${data.name}','${data.address}','${data.lga}')">Edit</button>
+                <button class="btn-delete" onclick="deleteCenter('${d.id}')">Delete</button>
+            </div>
+        </div>
+        `;
+    });
+}
+
+// ADD CENTER
+window.addCenter = async () => {
+    const name = document.getElementById("name").value;
+    const address = document.getElementById("address").value;
+    const lga = document.getElementById("lga").value;
+
+    if(!name || !address || !lga) {
+        alert("Fill all fields");
+        return;
+    }
+
+    await addDoc(collection(db, "centers"), { name, address, lga });
+
+    alert("Center added!");
+    loadCenters();
+};
+
+// DELETE
+window.deleteCenter = async (id) => {
+    if(confirm("Delete this center?")) {
+        await deleteDoc(doc(db, "centers", id));
+        loadCenters();
+    }
+};
+
+// EDIT
+window.editCenter = async (id, name, address, lga) => {
+    const newName = prompt("Edit Name", name);
+    const newAddress = prompt("Edit Address", address);
+
+    if(newName && newAddress) {
+        await updateDoc(doc(db, "centers", id), {
+            name: newName,
+            address: newAddress,
+            lga: lga
+        });
+
+        loadCenters();
+    }
+};
+
+loadCenters();
+</script></body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexi Admin Panel</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f4f7f6;
+    padding:20px;
+}
+
+.card{
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+
+input, textarea, select{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+}
+
+button{
+    padding:12px;
+    margin-top:10px;
+    background:#003366;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🔥 Flexi Tutors Admin Panel</h2>
+
+<!-- SUBJECT LIST -->
+<script>
+const subjects = [
+"Account","Agricultural Science","Animal Husbandry","Arabic","Biology",
+"Catering Craft Practice","Chemistry","Christian Religious Studies (CRS)",
+"Book Keeping","Civic Education","Commerce","Computer Studies",
+"Data Processing","Economics","Fine Arts","Food and Nutrition","French",
+"Further Mathematics","Geography","Government","Hausa","History",
+"Home Economics","Igbo","Insurance","Home Management",
+"Islamic Religious Knowledge (IRK)","Literature In English","Marketing",
+"Mathematics","Music","Office Practice","Physical Education","Physics",
+"Technical Drawing","Yoruba"
+];
+
+function populateSelect(id){
+    const select = document.getElementById(id);
+    subjects.forEach(sub => {
+        const option = document.createElement("option");
+        option.value = sub;
+        option.textContent = sub;
+        select.appendChild(option);
+    });
+}
+</script>
+
+<!-- CREATE PIN -->
+<div class="card">
+<h3>Create / Update PIN</h3>
+
+<select id="pin-subject"></select>
+<input type="text" id="pin-code" placeholder="Enter 4-digit PIN">
+
+<button onclick="savePin()">Save PIN</button>
+</div>
+
+<!-- UPLOAD QUESTIONS -->
+<div class="card">
+<h3>Upload Questions (Images)</h3>
+
+<select id="q-subject"></select>
+
+<input type="file" id="image-files" multiple>
+
+<button onclick="uploadQuestions()">Upload Questions</button>
+</div>
+
+<!-- UPLOAD ANSWERS -->
+<div class="card">
+<h3>Upload Answers</h3>
+
+<select id="a-subject"></select>
+
+<textarea id="answers" placeholder="Paste answers here"></textarea>
+
+<button onclick="uploadAnswers()">Upload Answers</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const app = initializeApp({
+    apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+    projectId: "waec2026jamb2027"
+});
+
+const db = getFirestore(app);
+
+/* POPULATE SUBJECTS */
+populateSelect("pin-subject");
+populateSelect("q-subject");
+populateSelect("a-subject");
+
+/* SAVE PIN */
+window.savePin = async () => {
+    const subject = document.getElementById('pin-subject').value;
+    const pin = document.getElementById('pin-code').value;
+
+    if(pin.length < 4){
+        alert("PIN must be 4 digits");
+        return;
+    }
+
+    await setDoc(doc(db, "expo_pins", subject), {
+        subject,
+        pinCode: pin
+    });
+
+    alert("✅ PIN saved");
+};
+
+/* CLOUDINARY CONFIG */
+const CLOUD_NAME = "dwmbgd9jy";
+const UPLOAD_PRESET = "my_preset_123";
+
+/* UPLOAD QUESTIONS */
+window.uploadQuestions = async () => {
+    const subject = document.getElementById('q-subject').value;
+    const files = document.getElementById('image-files').files;
+
+    if(files.length === 0){
+        alert("Select images first");
+        return;
+    }
+
+    let urls = [];
+
+    for(let file of files){
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", UPLOAD_PRESET);
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+        urls.push(data.secure_url);
+    }
+
+    await setDoc(doc(db, "expo_data", subject), {
+        questionImages: urls
+    }, { merge:true });
+
+    alert("✅ Questions uploaded successfully");
+};
+
+/* UPLOAD ANSWERS */
+window.uploadAnswers = async () => {
+    const subject = document.getElementById('a-subject').value;
+    const answers = document.getElementById('answers').value;
+
+    await setDoc(doc(db, "expo_data", subject), {
+        answerText: answers
+    }, { merge:true });
+
+    alert("✅ Answers uploaded");
+};
+</script>
+
+</body>
+</html>

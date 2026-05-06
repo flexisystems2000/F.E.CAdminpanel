@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexi Tutors Admin</title>
+
+<style>
+body {
+  margin:0;
+  font-family: Arial;
+  background:#fff;
+  color:#333;
+}
+
+/* HEADER */
+header {
+  background:navy;
+  color:white;
+  padding:15px;
+  font-weight:bold;
+  font-size:18px;
+}
+
+/* DASHBOARD GRID */
+.dashboard {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:15px;
+  padding:15px;
+}
+
+/* SQUARE CARD */
+.card {
+  aspect-ratio: 1 / 1;
+  background:white;
+  border-radius:15px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* STOCK NUMBER */
+.stock-number {
+  font-size:40px;
+  font-weight:bold;
+  margin-top:10px;
+}
+
+/* ALERT BLINK (SOFT LIGHT RED) */
+@keyframes softRedBlink {
+  0% {
+    background: #ffffff;
+  }
+  50% {
+    background: #ffe6e6; /* very light red */
+  }
+  100% {
+    background: #ffffff;
+  }
+}
+
+.alert {
+  animation: softRedBlink 1.8s infinite;
+  border: 2px solid #ffb3b3; /* soft red border */
+}
+
+/* FORM CARD */
+.form-card {
+  margin:15px;
+  background:white;
+  padding:15px;
+  border-radius:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* INPUT FIX */
+input, select, button {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  box-sizing:border-box;
+  font-size:14px;
+}
+
+/* BUTTON */
+button {
+  background:darkgreen;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* HIDE */
+.hidden {
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>Flexi Tutors Admin Panel</header>
+
+<!-- DASHBOARD -->
+<div class="dashboard">
+
+  <div class="card" id="waecCard">
+    <h3>WAEC</h3>
+    <div id="waecStock" class="stock-number">0</div>
+  </div>
+
+  <div class="card" id="necoCard">
+    <h3>NECO</h3>
+    <div id="necoStock" class="stock-number">0</div>
+  </div>
+
+</div>
+
+<!-- FORM -->
+<div class="form-card">
+
+<h3>Add PIN</h3>
+
+<select id="typeSelect" onchange="toggleFields()">
+  <option value="WAEC">WAEC</option>
+  <option value="NECO">NECO</option>
+</select>
+
+<!-- WAEC -->
+<div id="waecFields">
+  <input id="serial" placeholder="Serial Number">
+  <input id="pin" placeholder="PIN">
+</div>
+
+<!-- NECO -->
+<div id="necoFields" class="hidden">
+  <input id="token" placeholder="Token">
+</div>
+
+<button onclick="addPin()">Add PIN</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+getFirestore, collection, addDoc, getDocs, query, where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+    authDomain: "waec2026jamb2027.firebaseapp.com",
+    projectId: "waec2026jamb2027",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
+// TOGGLE FORM
+window.toggleFields = () => {
+    const type = document.getElementById("typeSelect").value;
+
+    document.getElementById("waecFields").classList.toggle("hidden", type !== "WAEC");
+    document.getElementById("necoFields").classList.toggle("hidden", type !== "NECO");
+};
+
+
+// ADD PIN
+window.addPin = async () => {
+    const type = document.getElementById("typeSelect").value;
+
+    if (type === "WAEC") {
+        await addDoc(collection(db, "pins"), {
+            examType: "WAEC",
+            serial: document.getElementById("serial").value,
+            pinCode: document.getElementById("pin").value,
+            status: "available"
+        });
+    } else {
+        await addDoc(collection(db, "pins"), {
+            examType: "NECO",
+            token: document.getElementById("token").value,
+            status: "available"
+        });
+    }
+
+    alert("PIN Added Successfully");
+    loadStock();
+};
+
+
+// LOAD STOCK
+async function loadStock() {
+
+    const waecSnap = await getDocs(query(
+        collection(db, "pins"),
+        where("examType", "==", "WAEC"),
+        where("status", "==", "available")
+    ));
+
+    const necoSnap = await getDocs(query(
+        collection(db, "pins"),
+        where("examType", "==", "NECO"),
+        where("status", "==", "available")
+    ));
+
+    const waecCount = waecSnap.size;
+    const necoCount = necoSnap.size;
+
+    document.getElementById("waecStock").innerText = waecCount;
+    document.getElementById("necoStock").innerText = necoCount;
+
+    const waecCard = document.getElementById("waecCard");
+    const necoCard = document.getElementById("necoCard");
+
+    // REMOVE OLD ALERT
+    waecCard.classList.remove("alert");
+    necoCard.classList.remove("alert");
+
+    // ALERT IF LOW
+    if (waecCount <= 2) {
+        waecCard.classList.add("alert");
+    }
+
+    if (necoCount <= 2) {
+        necoCard.classList.add("alert");
+    }
+}
+
+
+// AUTO REFRESH
+setInterval(loadStock, 5000);
+loadStock();
+
+</script>
+
+</body>
+</html>

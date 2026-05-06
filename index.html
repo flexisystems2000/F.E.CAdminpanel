@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Flexi Educational Consult</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #f4f7f9; 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+        }
+        .login-card { 
+            background: white; 
+            padding: 40px 30px; 
+            border-radius: 30px; /* Matching the 25px-30px curved edge style */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            text-align: center; 
+            width: 100%; 
+            max-width: 350px; 
+        }
+        .logo { width: 70px; margin-bottom: 15px; }
+        h2 { color: #1a2a6c; margin-bottom: 5px; font-size: 1.5rem; }
+        p { color: #777; font-size: 0.85rem; margin-bottom: 25px; }
+        
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.8rem; font-weight: 600; color: #555; }
+        .input-group input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #e1e5ee; 
+            border-radius: 12px; 
+            box-sizing: border-box; 
+            outline: none; 
+            transition: 0.3s;
+        }
+        .input-group input:focus { border-color: #6a11cb; }
+        
+        .login-btn { 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 15px; 
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); 
+            color: white; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            transition: 0.3s;
+        }
+        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3); }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <img src="logo.png" alt="Flexi Logo" class="logo">
+        <h2>Admin Login</h2>
+        <p>Center Access Portal</p>
+        
+        <form id="loginForm">
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="email" required placeholder="admin@center.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="login-btn" id="loginBtn">Verify & Login</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Using your specific Firebase Config
+        const firebaseConfig = {
+          apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+          authDomain: "waec2026jamb2027.firebaseapp.com",
+          databaseURL: "https://waec2026jamb2027-default-rtdb.firebaseio.com",
+          projectId: "waec2026jamb2027",
+          storageBucket: "waec2026jamb2027.firebasestorage.app",
+          messagingSenderId: "465373608641",
+          appId: "1:465373608641:web:03d21cead99a3c9b65f240",
+          measurementId: "G-XD6YTGGC30"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            loginBtn.disabled = true;
+            loginBtn.innerText = "Authenticating...";
+
+            try {
+                // 1. Authenticate with Firebase Auth
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const uid = userCredential.user.uid;
+
+                // 2. Retrieve the specific center information from Firestore
+                const adminDoc = await getDoc(doc(db, "admins", uid));
+
+                if (adminDoc.exists()) {
+                    const data = adminDoc.data();
+                    
+                    // Store center details in LocalStorage for the Dashboard to use
+                    localStorage.setItem('centerID', data.centerID);
+                    localStorage.setItem('centerName', data.centerName);
+                    localStorage.setItem('adminEmail', email);
+
+                    // 3. Redirect to the Center Dashboard
+                    window.location.href = "home.html";
+                } else {
+                    alert("Account found, but no Center Data exists in HQ Records.");
+                    await auth.signOut();
+                    location.reload();
+                }
+            } catch (error) {
+                alert("Login Failed: " + error.message);
+                loginBtn.disabled = false;
+                loginBtn.innerText = "Verify & Login";
+            }
+        });
+    </script>
+</body>
+</html>

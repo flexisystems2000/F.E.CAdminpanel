@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor Recruitment | Flexi Consult</title>
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --accent: #2575fc;
+            --bg: #f4f7f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .staff-card {
+            background: white;
+            width: 100%;
+            max-width: 500px; /* Slightly narrower for a cleaner vertical look */
+            padding: 40px;
+            border-radius: 28px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        h2 { color: var(--primary); margin-bottom: 5px; }
+        .subtitle { color: #666; font-size: 0.85rem; margin-bottom: 30px; }
+
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-size: 0.8rem; font-weight: bold; color: #444; margin-bottom: 8px; }
+        
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e1e5ee;
+            border-radius: 15px;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 0.95rem;
+            transition: 0.3s;
+        }
+
+        input:focus, select:focus { border-color: var(--primary); }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 15px;
+            box-shadow: 0 8px 20px rgba(26, 42, 108, 0.2);
+        }
+
+        .cbt-notice {
+            background: #eef2ff;
+            color: var(--primary);
+            padding: 15px;
+            border-radius: 18px;
+            font-size: 0.8rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            border-left: 5px solid var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="staff-card">
+    <header>
+        <h2>Tutor Application</h2>
+        <p class="subtitle">Academic Excellence & Recruitment Portal</p>
+    </header>
+
+    <div class="cbt-notice">
+        <b>Intelligence Verification:</b> Upon submission, you will be redirected to the CBT engine for a proficiency test in your chosen subject.
+    </div>
+
+    <form id="staffForm">
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="staffName" placeholder="e.g. John Doe" required>
+        </div>
+
+        <div class="form-group">
+            <label>WhatsApp Number</label>
+            <input type="tel" id="staffPhone" placeholder="080XXXXXXXX" required>
+        </div>
+
+        <div class="form-group">
+            <label>Subject Specialty (CBT Test Area)</label>
+            <select id="subjectSelect" required>
+                <option value="" disabled selected>-- Select a Subject --</option>
+                <optgroup label="Core & Science">
+                    <option value="English Language">English Language</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Further Mathematics">Further Mathematics</option>
+                    <option value="Computer Studies (ICT)">Computer Studies (ICT)</option>
+                    <option value="Agricultural Science">Agricultural Science</option>
+                </optgroup>
+                <optgroup label="Social Sciences & Commercial">
+                    <option value="Economics">Economics</option>
+                    <option value="Commerce">Commerce</option>
+                    <option value="Financial Accounting">Financial Accounting</option>
+                    <option value="Government">Government</option>
+                    <option value="Geography">Geography</option>
+                    <option value="Civic Education">Civic Education</option>
+                </optgroup>
+                <optgroup label="Arts & Languages">
+                    <option value="Literature in English">Literature in English</option>
+                    <option value="History">History</option>
+                    <option value="CRS">Christian Religious Studies (CRS)</option>
+                    <option value="IRS">Islamic Religious Studies (IRS)</option>
+                    <option value="French">French</option>
+                    <option value="Arabic">Arabic</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Highest Qualification</label>
+            <select id="qualification">
+                <option value="B.Sc/B.Ed">B.Sc / B.Ed</option>
+                <option value="M.Sc/M.Ed">M.Sc / M.Ed</option>
+                <option value="HND">HND</option>
+                <option value="Undergraduate">Undergraduate</option>
+                <option value="PhD">PhD</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">Start Proficiency Test</button>
+    </form>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+        authDomain: "waec2026jamb2027.firebaseapp.com",
+        projectId: "waec2026jamb2027",
+        storageBucket: "waec2026jamb2027.firebasestorage.app",
+        messagingSenderId: "465373608641",
+        appId: "1:465373608641:web:03d21cead99a3c9b65f240"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const form = document.getElementById('staffForm');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "Securing Session...";
+
+        const selectedSubject = document.getElementById('subjectSelect').value;
+        const phone = document.getElementById('staffPhone').value;
+
+        const staffData = {
+            fullName: document.getElementById('staffName').value,
+            phone: phone,
+            specialty: selectedSubject,
+            qualification: document.getElementById('qualification').value,
+            status: "Awaiting CBT Result",
+            centerID: localStorage.getItem('centerID') || "HQ",
+            timestamp: new Date().toISOString()
+        };
+
+        try {
+            // Save application info before test starts
+            await setDoc(doc(db, "staff_applications", phone), staffData);
+            
+            // Pass data to the CBT engine
+            localStorage.setItem('activeStaffPhone', phone);
+            localStorage.setItem('activeStaffName', staffData.fullName);
+            localStorage.setItem('activeSubject', selectedSubject);
+
+            // Forward to the quiz page
+            window.location.href = "staff-cbt.html";
+            
+        } catch (error) {
+            alert("Error initializing test: " + error.message);
+            btn.disabled = false;
+            btn.innerText = "Start Proficiency Test";
+        }
+    });
+</script>
+
+</body>
+</html>

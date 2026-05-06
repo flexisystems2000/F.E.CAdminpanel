@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flexi AI Proctored Examiner</title>
+    <style>
+        :root { --p: #6a11cb; --s: #2575fc; --w: #ff4b2b; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
+        .exam-card { max-width: 550px; margin: auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 12px 40px rgba(0,0,0,0.15); position: relative; }
+        #camera-circle { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 4px solid var(--p); position: absolute; top: -45px; right: 20px; background: #000; }
+        .strike-bar { color: var(--w); font-weight: bold; margin: 15px 0; border: 1px solid var(--w); padding: 5px 15px; border-radius: 10px; display: inline-block; }
+        #q-text { font-size: 1.2rem; margin-top: 50px; line-height: 1.5; color: #1a1a1a; min-height: 120px; }
+        .opt { width: 100%; padding: 16px; margin: 10px 0; border: 2px solid #eef; border-radius: 15px; text-align: left; background: #fff; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .opt:active { background: #eef2ff; transform: scale(0.98); }
+        .footer { display: flex; justify-content: flex-end; margin-top: 20px; }
+        .dish-btn { background: linear-gradient(45deg, var(--p), var(--s)); color: white; border: none; padding: 14px 40px; border-radius: 50px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3); }
+    </style>
+</head>
+<body>
+
+<div class="exam-card">
+    <video id="camera-circle" autoplay playsinline muted></video>
+    
+    <div id="strike-count" class="strike-bar">Strikes: 0 / 3</div>
+    
+    <div id="q-text">Setting up the examiner desk...</div>
+
+    <div id="options">
+        <button class="opt" onclick="check('A')">A) <span id="A">...</span></button>
+        <button class="opt" onclick="check('B')">B) <span id="B">...</span></button>
+        <button class="opt" onclick="check('C')">C) <span id="C">...</span></button>
+        <button class="opt" onclick="check('D')">D) <span id="D">...</span></button>
+    </div>
+
+    <div class="footer">
+        <button class="dish-btn" onclick="dish()">Next Question</button>
+    </div>
+</div>
+
+<script>
+    let strikes = 0;
+    const API = "api-generate-js-git-main-flexisystems2000-6493s-projects.vercel.app/api/generate"; // <--- CHANGE THIS
+
+    async function dish() {
+        const sub = localStorage.getItem('selectedSubject') || 'General Paper';
+        document.getElementById('q-text').innerHTML = "<em>Dishing fresh A-Level question...</em>";
+        
+        try {
+            const res = await fetch(API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject: sub })
+            });
+            const data = await res.json();
+            
+            document.getElementById('q-text').innerText = data.question;
+            document.getElementById('A').innerText = data.options.A;
+            document.getElementById('B').innerText = data.options.B;
+            document.getElementById('C').innerText = data.options.C;
+            document.getElementById('D').innerText = data.options.D;
+        } catch (e) {
+            document.getElementById('q-text').innerText = "Examiner is offline";
+        }
+    }
+
+    function addStrike(msg) {
+        strikes++;
+        document.getElementById('strike-count').innerText = `Strikes: ${strikes} / 3`;
+        alert(`SECURITY ALERT: ${msg}`);
+        if (strikes >= 3) window.location.href = "disqualified.html";
+    }
+
+    // Proctoring Logic
+    window.onblur = () => { setTimeout(() => { if(document.hidden) addStrike("Tab switched!"); }, 1000); };
+    
+    async function initCam() {
+        try {
+            const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+            document.getElementById('camera-circle').srcObject = s;
+        } catch (e) { alert("Camera access is mandatory."); }
+    }
+
+    window.onload = () => { initCam(); dish(); };
+</script>
+</body>
+</html>

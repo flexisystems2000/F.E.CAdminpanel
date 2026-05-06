@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration | Flexi Consult</title>
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --accent: #6a11cb;
+            --bg: #f4f7f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .reg-hub {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 35px;
+            border-radius: 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            align-self: flex-start;
+        }
+
+        header { text-align: center; margin-bottom: 30px; }
+        .logo { width: 60px; margin-bottom: 10px; }
+        h2 { color: var(--primary); margin: 0; font-size: 1.5rem; }
+
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 5px; }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5ee;
+            border-radius: 15px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+            font-size: 0.95rem;
+        }
+
+        input:focus { border-color: var(--accent); }
+
+        .btn-row { margin-top: 25px; }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .instruction-box {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #444;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow-y: auto;
+            border-left: 5px solid var(--accent);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+        }
+
+        .checkbox-group input { width: auto; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="reg-hub">
+    <header>
+        <img src="logo.png" alt="Logo" class="logo">
+        <h2>Student Hub</h2>
+    </header>
+
+    <div class="step active" id="step1">
+
+        <div class="form-group">
+            <label>Surname</label>
+            <input type="text" id="surname" required>
+        </div>
+
+        <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="firstName" required>
+        </div>
+
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="lastName">
+        </div>
+
+        <div class="form-group">
+            <label>Exam Type</label>
+            <select id="examType">
+                <option value="">Select</option>
+                <option value="WAEC">WAEC</option>
+                <option value="JAMB">JAMB</option>
+                <option value="NECO">NECO</option>
+                <option value="JUPEB">JUPEB</option>
+                <option value="PostUTME">PostUTME</option>
+                <option value="GCE">GCE</option>
+            </select>
+        </div>
+
+        <div id="jambBox" style="display:none;">
+            <label>JAMB Subjects</label>
+            <input id="jsub1" placeholder="Subject 1">
+            <input id="jsub2" placeholder="Subject 2">
+            <input id="jsub3" placeholder="Subject 3">
+            <input id="jsub4" placeholder="Subject 4">
+
+            <label>Institution Choices</label>
+            <input id="choice1" placeholder="1st Choice">
+            <input id="choice2" placeholder="2nd Choice">
+            <input id="choice3" placeholder="3rd Choice">
+            <input id="choice4" placeholder="4th Choice">
+        </div>
+
+        <div id="waecBox" style="display:none;">
+            <label>WAEC Subjects (8–9)</label>
+            <input id="w1" placeholder="Subject 1">
+            <input id="w2" placeholder="Subject 2">
+            <input id="w3" placeholder="Subject 3">
+            <input id="w4" placeholder="Subject 4">
+            <input id="w5" placeholder="Subject 5">
+            <input id="w6" placeholder="Subject 6">
+            <input id="w7" placeholder="Subject 7">
+            <input id="w8" placeholder="Subject 8">
+            <input id="w9" placeholder="Subject 9 (Optional)">
+        </div>
+
+        <div class="form-group">
+            <label>Address</label>
+            <textarea id="address"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email">
+        </div>
+
+        <div class="form-group">
+            <label>WhatsApp</label>
+            <input type="tel" id="whatsapp" required>
+        </div>
+
+        <div class="form-group">
+            <label>Parent Contact</label>
+            <input type="tel" id="parentContact">
+        </div>
+
+        <div class="btn-row">
+            <button class="btn" onclick="nextStep()">Next</button>
+        </div>
+    </div>
+
+    <div class="step" id="step2">
+        <h3>Instructions</h3>
+
+        <div class="instruction-box">
+            <p>Welcome to <b>Flexi Educational Consult</b>. Please read carefully:</p>
+            <ol>
+                <li><b>Attendance:</b> Daily attendance is compulsory for all tutorial sessions.</li>
+                <li><b>CBT Access:</b> Your WhatsApp number will serve as your unique Portal ID.</li>
+                <li><b>Payments:</b> Ensure all tutorial and exam fees are cleared to maintain account activity.</li>
+                <li><b>Conduct:</b> Respectful behavior towards staff and fellow students is required at all times.</li>
+                <li><b>Updates:</b> All exam notifications will be sent via the WhatsApp number provided.</li>
+            </ol>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="agreeCheck">
+            <label>I agree that I have read the rules and adhere to the Tutorial rules and regulations.</label>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn" onclick="activateAccount()">Activate</button>
+        </div>
+    </div>
+</div>
+
+<!-- POPUP CARD -->
+<div id="popupCard" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:999;">
+    <div style="background:white; padding:25px; border-radius:20px; width:90%; max-width:400px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+        <h3 id="popupTitle"></h3>
+        <p id="popupMessage" style="font-size:0.9rem; color:#555;"></p>
+        <button onclick="closePopup()" style="margin-top:20px; padding:12px 20px; border:none; border-radius:12px; background:linear-gradient(135deg,#1a2a6c,#6a11cb); color:white; cursor:pointer;">
+            OK
+        </button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const app = initializeApp({
+    apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+    authDomain: "waec2026jamb2027.firebaseapp.com",
+    projectId: "waec2026jamb2027"
+});
+
+const db = getFirestore(app);
+
+function showPopup(title, message) {
+    popupTitle.innerText = title;
+    popupMessage.innerHTML = message;
+    popupCard.style.display = "flex";
+}
+
+window.closePopup() {
+    popupCard.style.display = "none";
+}
+
+examType.addEventListener("change", () => {
+    jambBox.style.display = examType.value === "JAMB" ? "block" : "none";
+    waecBox.style.display = examType.value === "WAEC" ? "block" : "none";
+});
+
+window.nextStep = () => {
+    step1.classList.remove("active");
+    step2.classList.add("active");
+};
+
+window.activateAccount = async () => {
+
+    if (!agreeCheck.checked) {
+        return showPopup("Action Required", "You must agree first.");
+    }
+
+    let data = {
+        surname: surname.value,
+        firstName: firstName.value,
+        lastName: lastName.value,
+        examType: examType.value,
+        whatsapp: whatsapp.value,
+        regDate: new Date().toISOString()
+    };
+
+    if (examType.value === "JAMB") {
+        let subs = [jsub1.value,jsub2.value,jsub3.value,jsub4.value];
+        let choices = [choice1.value,choice2.value,choice3.value,choice4.value];
+
+        if (subs.some(s=>!s)) return showPopup("Error","Fill all JAMB subjects");
+        if (choices.some(c=>!c)) return showPopup("Error","Fill all institution choices");
+
+        data.jambSubjects = subs;
+        data.institutions = choices;
+    }
+
+    if (examType.value === "WAEC") {
+        let waec = [w1.value,w2.value,w3.value,w4.value,w5.value,w6.value,w7.value,w8.value,w9.value].filter(x=>x);
+        if (waec.length < 8) return showPopup("Error","Enter at least 8 subjects");
+        data.waecSubjects = waec;
+    }
+
+    try {
+        await setDoc(doc(db,"students",whatsapp.value),data);
+
+        let link = "https://your-payment-link.com";
+
+        showPopup(
+            "Registration Successful",
+            `Registration done successfully.<br><br>
+            Please kindly go to this link:<br>
+            <a href="${link}" target="_blank">${link}</a><br><br>
+            to make your <b>${examType.value}</b> tutorial payments and validate your account.`
+        );
+
+    } catch (e) {
+        showPopup("Registration Failed","Failed to register. Please try again");
+    }
+};
+</script>
+
+</body>
+</html>
