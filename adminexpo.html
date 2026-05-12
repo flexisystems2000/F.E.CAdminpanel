@@ -3,98 +3,125 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flexi Admin Panel</title>
+<title>Flexi Admin | Content Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
-body{
-    font-family: Arial;
-    background:#f4f7f6;
-    padding:20px;
+:root { 
+    --blue: #003366; 
+    --green: #2E8B57; 
+    --bg: #f0f2f5;
 }
 
-.card{
-    background:#fff;
-    padding:20px;
-    border-radius:10px;
-    margin-bottom:20px;
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 20px;
 }
 
-input, textarea, select{
-    width:100%;
-    padding:10px;
-    margin-top:10px;
+.admin-container { max-width: 600px; margin: 0 auto; }
+.card { background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
+
+h2, h3 { color: var(--blue); margin-top: 0; }
+label { display: block; font-size: 0.85rem; font-weight: 600; margin-top: 15px; color: #4a5568; }
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 0.95rem;
 }
 
-button{
-    padding:12px;
-    margin-top:10px;
-    background:#003366;
-    color:white;
-    border:none;
-    cursor:pointer;
+textarea {
+    white-space: pre-wrap; /* Helps you see line breaks while typing */
+    line-height: 1.5;
 }
+
+input:focus, textarea:focus {
+    border-color: var(--blue);
+    outline: none;
+}
+
+.btn {
+    background: var(--blue);
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 15px;
+    width: 100%;
+    transition: opacity 0.2s;
+}
+
+.btn-green { background: var(--green); }
+
+.ans-item { 
+    border-bottom: 2px solid #edf2f7; 
+    padding: 20px 0; 
+}
+
+.ans-label { 
+    font-weight: 800; 
+    color: var(--blue); 
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.ans-box {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.loading { opacity: 0.5; pointer-events: none; }
 </style>
 </head>
 
 <body>
 
-<h2>🔥 Flexi Tutors Admin Panel</h2>
+<div class="admin-container">
+    <h2>🚀 Flexi Content Manager</h2>
 
-<!-- SUBJECT LIST -->
-<script>
-const subjects = [
-"Account","Agricultural Science","Animal Husbandry","Arabic","Biology",
-"Catering Craft Practice","Chemistry","Christian Religious Studies (CRS)",
-"Book Keeping","Civic Education","Commerce","Computer Studies",
-"Data Processing","Economics","Fine Arts","Food and Nutrition","French",
-"Further Mathematics","Geography","Government","Hausa","History",
-"Home Economics","Igbo","Insurance","Home Management",
-"Islamic Religious Knowledge (IRK)","Literature In English","Livestock Management","Marketing",
-"Mathematics","Music","Office Practice","Physical Education","Physics",
-"Technical Drawing","Yoruba"
-];
+    <div class="card">
+        <h3>🔑 Step 1: Manage PIN</h3>
+        <label>Select Subject</label>
+        <select id="pin-subject" class="sub-list"></select>
+        
+        <label>4-Digit Access PIN</label>
+        <input type="text" id="pin-code" maxlength="4" placeholder="e.g. 1234">
+        
+        <button class="btn" onclick="savePin()">Save Access PIN</button>
+    </div>
 
-function populateSelect(id){
-    const select = document.getElementById(id);
-    subjects.forEach(sub => {
-        const option = document.createElement("option");
-        option.value = sub;
-        option.textContent = sub;
-        select.appendChild(option);
-    });
-}
-</script>
+    <div class="card">
+        <h3>📸 Step 2: Upload Questions</h3>
+        <label>Select Subject</label>
+        <select id="q-subject" class="sub-list"></select>
+        
+        <label>Question Images (Select Multiple)</label>
+        <input type="file" id="q-files" multiple>
+        
+        <button class="btn btn-green" onclick="uploadQuestions()">Upload Questions</button>
+    </div>
 
-<!-- CREATE PIN -->
-<div class="card">
-<h3>Create / Update PIN</h3>
+    <div class="card">
+        <h3>📝 Step 3: Detailed Answers (1-20)</h3>
+        <label>Select Subject</label>
+        <select id="a-subject" class="sub-list"></select>
 
-<select id="pin-subject"></select>
-<input type="text" id="pin-code" placeholder="Enter 4-digit PIN">
+        <div id="answers-container">
+            </div>
 
-<button onclick="savePin()">Save PIN</button>
-</div>
-
-<!-- UPLOAD QUESTIONS -->
-<div class="card">
-<h3>Upload Questions (Images)</h3>
-
-<select id="q-subject"></select>
-
-<input type="file" id="image-files" multiple>
-
-<button onclick="uploadQuestions()">Upload Questions</button>
-</div>
-
-<!-- UPLOAD ANSWERS -->
-<div class="card">
-<h3>Upload Answers</h3>
-
-<select id="a-subject"></select>
-
-<textarea id="answers" placeholder="Paste answers here"></textarea>
-
-<button onclick="uploadAnswers()">Upload Answers</button>
+        <button class="btn" id="bulk-save-btn" onclick="saveAllAnswers()">Save All Answer Data</button>
+    </div>
 </div>
 
 <script type="module">
@@ -105,79 +132,134 @@ const app = initializeApp({
     apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
     projectId: "waec2026jamb2027"
 });
-
 const db = getFirestore(app);
 
-/* POPULATE SUBJECTS */
-populateSelect("pin-subject");
-populateSelect("q-subject");
-populateSelect("a-subject");
+const subjects = [
+    "Account","Agricultural Science","Animal Husbandry","Arabic","Biology",
+    "Catering Craft Practice","Chemistry","Christian Religious Studies (CRS)",
+    "Book Keeping","Civic Education","Commerce","Computer Studies",
+    "Data Processing","Economics","Fine Arts","Food and Nutrition","French",
+    "Further Mathematics","Geography","Government","Hausa","History",
+    "Home Economics","Igbo","Insurance","Home Management",
+    "Islamic Religious Knowledge (IRK)","Literature In English","Marketing",
+    "Mathematics","Music","Office Practice","Physical Education","Physics",
+    "Technical Drawing","Yoruba"
+];
 
-/* SAVE PIN */
-window.savePin = async () => {
-    const subject = document.getElementById('pin-subject').value;
-    const pin = document.getElementById('pin-code').value;
-
-    if(pin.length < 4){
-        alert("PIN must be 4 digits");
-        return;
-    }
-
-    await setDoc(doc(db, "expo_pins", subject), {
-        subject,
-        pinCode: pin
-    });
-
-    alert("✅ PIN saved");
-};
-
-/* CLOUDINARY CONFIG */
 const CLOUD_NAME = "dwmbgd9jy";
 const UPLOAD_PRESET = "my_preset_123";
 
-/* UPLOAD QUESTIONS */
-window.uploadQuestions = async () => {
-    const subject = document.getElementById('q-subject').value;
-    const files = document.getElementById('image-files').files;
+// Populate Dropdowns
+document.querySelectorAll('.sub-list').forEach(select => {
+    subjects.sort().forEach(s => {
+        let opt = new Option(s, s);
+        select.add(opt);
+    });
+});
 
-    if(files.length === 0){
-        alert("Select images first");
-        return;
-    }
+// Generate Answer Blocks 1-20
+const container = document.getElementById('answers-container');
+for(let i=1; i<=20; i++){
+    const div = document.createElement('div');
+    div.className = "ans-item";
+    div.innerHTML = `
+        <div class="ans-label">NUMBER ${i}</div>
+        <div class="ans-box">
+            <label>Text Answer (Spacing/Paragraphs preserved)</label>
+            <textarea id="text-${i}" placeholder="Paste/Type answer for number ${i}..." rows="5"></textarea>
+            
+            <label style="margin-top:20px;">Image Answer</label>
+            <input type="file" id="file-${i}" accept="image/*">
+        </div>
+    `;
+    container.appendChild(div);
+}
 
-    let urls = [];
+// Cloudinary Helper
+async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { 
+        method: "POST", 
+        body: formData 
+    });
+    const data = await res.json();
+    return data.secure_url;
+}
 
-    for(let file of files){
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", UPLOAD_PRESET);
-
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await res.json();
-        urls.push(data.secure_url);
-    }
-
-    await setDoc(doc(db, "expo_data", subject), {
-        questionImages: urls
-    }, { merge:true });
-
-    alert("✅ Questions uploaded successfully");
+// Save PIN
+window.savePin = async () => {
+    const sub = document.getElementById('pin-subject').value;
+    const pin = document.getElementById('pin-code').value;
+    if(pin.length !== 4) return alert("PIN must be 4 digits");
+    
+    await setDoc(doc(db, "expo_pins", sub), { subject: sub, pinCode: pin });
+    alert("✅ PIN Saved for " + sub);
 };
 
-/* UPLOAD ANSWERS */
-window.uploadAnswers = async () => {
-    const subject = document.getElementById('a-subject').value;
-    const answers = document.getElementById('answers').value;
+// Upload Questions
+window.uploadQuestions = async () => {
+    const sub = document.getElementById('q-subject').value;
+    const files = document.getElementById('q-files').files;
+    if(files.length === 0) return alert("Select images first");
 
-    await setDoc(doc(db, "expo_data", subject), {
-        answerText: answers
-    }, { merge:true });
+    const btn = event.target;
+    btn.innerText = "Uploading Questions...";
+    btn.classList.add('loading');
 
-    alert("✅ Answers uploaded");
+    try {
+        let urls = [];
+        for(let f of files) urls.push(await uploadToCloudinary(f));
+        await setDoc(doc(db, "expo_data", sub), { questionImages: urls }, { merge: true });
+        alert("✅ Questions Uploaded");
+    } catch (e) {
+        alert("Upload failed.");
+    } finally {
+        btn.innerText = "Upload Questions";
+        btn.classList.remove('loading');
+    }
+};
+
+// Save All Answer Data
+window.saveAllAnswers = async () => {
+    const sub = document.getElementById('a-subject').value;
+    const btn = document.getElementById('bulk-save-btn');
+    
+    btn.innerText = "Preserving Spacing & Syncing...";
+    btn.classList.add('loading');
+
+    let updateObj = {};
+
+    try {
+        for(let i=1; i<=20; i++) {
+            // Using .value captures all line breaks and paragraph spacing automatically
+            const textVal = document.getElementById(`text-${i}`).value;
+            const fileInput = document.getElementById(`file-${i}`).files[0];
+
+            if(textVal.trim()) {
+                updateObj[`ans${i}`] = textVal;
+            }
+            
+            if(fileInput) {
+                const uploadedUrl = await uploadToCloudinary(fileInput);
+                updateObj[`ansImg${i}`] = uploadedUrl;
+            }
+        }
+
+        if(Object.keys(updateObj).length === 0) {
+            alert("No data entered to save.");
+        } else {
+            await setDoc(doc(db, "expo_data", sub), updateObj, { merge: true });
+            alert("✅ All Answers Saved for " + sub + " (Spacing preserved)");
+        }
+    } catch (e) {
+        alert("Error saving data.");
+        console.error(e);
+    } finally {
+        btn.innerText = "Save All Answer Data";
+        btn.classList.remove('loading');
+    }
 };
 </script>
 
