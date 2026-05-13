@@ -38,7 +38,7 @@ input, select, textarea {
 }
 
 textarea {
-    white-space: pre-wrap; /* Helps you see line breaks while typing */
+    white-space: pre-wrap;
     line-height: 1.5;
 }
 
@@ -112,13 +112,37 @@ input:focus, textarea:focus {
         <button class="btn btn-green" onclick="uploadQuestions()">Upload Questions</button>
     </div>
 
+    <!-- NEW OBJECTIVE SECTION -->
+    <div class="card">
+        <h3>🎯 Step 1.5: Objective Answers</h3>
+        <label>Select Subject</label>
+        <select id="obj-subject" class="sub-list"></select>
+        
+        <label>Upload Type</label>
+        <select id="obj-type" onchange="toggleObjInput()">
+            <option value="text">Text / Keys</option>
+            <option value="image">Image Upload</option>
+        </select>
+
+        <div id="obj-text-input" style="margin-top:15px;">
+            <label>Objective Text (e.g. 1.A, 2.B...)</label>
+            <textarea id="obj-text" placeholder="Type or paste objective keys here..." rows="4"></textarea>
+        </div>
+
+        <div id="obj-image-input" style="margin-top:15px; display:none;">
+            <label>Objective Image</label>
+            <input type="file" id="obj-file" accept="image/*">
+        </div>
+        
+        <button class="btn btn-green" onclick="saveObjectives()">Save Objective Data</button>
+    </div>
+    
     <div class="card">
         <h3>📝 Step 3: Detailed Answers (1-20)</h3>
         <label>Select Subject</label>
         <select id="a-subject" class="sub-list"></select>
 
-        <div id="answers-container">
-            </div>
+        <div id="answers-container"></div>
 
         <button class="btn" id="bulk-save-btn" onclick="saveAllAnswers()">Save All Answer Data</button>
     </div>
@@ -198,6 +222,46 @@ window.savePin = async () => {
     alert("✅ PIN Saved for " + sub);
 };
 
+// Toggle Objective Input
+window.toggleObjInput = () => {
+    const type = document.getElementById('obj-type').value;
+    document.getElementById('obj-text-input').style.display = type === 'text' ? 'block' : 'none';
+    document.getElementById('obj-image-input').style.display = type === 'image' ? 'block' : 'none';
+};
+
+// Save Objective
+window.saveObjectives = async () => {
+    const sub = document.getElementById('obj-subject').value;
+    const type = document.getElementById('obj-type').value;
+    const btn = event.target;
+    
+    btn.innerText = "Saving Objectives...";
+    btn.classList.add('loading');
+
+    let objData = {};
+
+    try {
+        if (type === 'text') {
+            const textVal = document.getElementById('obj-text').value;
+            if (!textVal.trim()) throw new Error("Please enter objective text");
+            objData = { objectiveText: textVal, objectiveImg: null };
+        } else {
+            const file = document.getElementById('obj-file').files[0];
+            if (!file) throw new Error("Please select an objective image");
+            const url = await uploadToCloudinary(file);
+            objData = { objectiveImg: url, objectiveText: null };
+        }
+
+        await setDoc(doc(db, "expo_data", sub), objData, { merge: true });
+        alert("✅ Objectives Saved for " + sub);
+    } catch (e) {
+        alert(e.message || "Failed to save objectives.");
+    } finally {
+        btn.innerText = "Save Objective Data";
+        btn.classList.remove('loading');
+    }
+};
+
 // Upload Questions
 window.uploadQuestions = async () => {
     const sub = document.getElementById('q-subject').value;
@@ -233,7 +297,6 @@ window.saveAllAnswers = async () => {
 
     try {
         for(let i=1; i<=20; i++) {
-            // Using .value captures all line breaks and paragraph spacing automatically
             const textVal = document.getElementById(`text-${i}`).value;
             const fileInput = document.getElementById(`file-${i}`).files[0];
 
