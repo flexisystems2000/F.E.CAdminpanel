@@ -129,14 +129,12 @@ window.handleCSV = (input) => {
     const reader = new FileReader();
     reader.onload = function(e) {
         const text = e.target.result;
-        // split by line, handles both Windows and Mac line breaks
         const rows = text.split(/\r?\n/).filter(line => line.trim() !== "");
         
         if (rows.length > 0) {
             const headRow = document.getElementById('table-head');
             const body = document.getElementById('table-body');
             
-            // Detect if comma or semicolon is used
             const delimiter = rows[0].includes(';') ? ';' : ',';
             const cols = rows[0].split(delimiter);
             
@@ -149,7 +147,6 @@ window.handleCSV = (input) => {
             for (let i = 1; i < rows.length; i++) {
                 const cells = rows[i].split(delimiter);
                 const tr = document.createElement('tr');
-                // Ensure row has same number of cells as header
                 for(let j=0; j<cols.length; j++){
                     const val = cells[j] ? cells[j].trim() : "";
                     tr.innerHTML += `<td><input type="text" value="${val}"></td>`;
@@ -157,7 +154,7 @@ window.handleCSV = (input) => {
                 body.appendChild(tr);
             }
         }
-        input.value = ""; // Reset to allow re-upload of same file
+        input.value = "";
     };
     reader.readAsText(file);
 };
@@ -217,6 +214,36 @@ async function uploadToCloudinary(file) {
     return data.secure_url;
 }
 
+// --- INSTANT GOOGLE INDEXING MICROSERVICE TRIGGER ---
+async function notifyGoogleIndexers(postUrl) {
+    console.log("Initializing instant Google indexing request for:", postUrl);
+    
+    // Your updated Render server base URL endpoint path
+    const renderServerUrl = 'https://flexicrawl.onrender.com/api/index-url'; 
+
+    try {
+        const response = await fetch(renderServerUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ url: postUrl })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log("Googlebot Ping Success:", data.message);
+            alert("✨ Update Live! Googlebots have been summoned to crawl this page immediately.");
+        } else {
+            console.error("Googlebot Ping Failed:", data.error);
+            alert("Warning: Update saved, but Google instant indexing failed to process.");
+        }
+    } catch (error) {
+        console.error("Network connection error to Render service:", error);
+    }
+}
+
 window.addNews = async () => {
     const title = document.getElementById("title").value;
     const content = document.getElementById("content").value;
@@ -239,14 +266,24 @@ window.addNews = async () => {
 
         let tableData = generateTableHTML();
 
-        await addDoc(collection(db, "news"), {
+        // Save entry data to Firestore database setup
+        const docRef = await addDoc(collection(db, "news"), {
             title, content, imageUrl, pdfUrl, pdfThumbUrl, tableData, timestamp: serverTimestamp()
         });
 
-        alert("Update Published!");
+        alert("Update Saved to Database!");
+
+        // Generate the real dynamic URL of your new page on the client platform
+        // Adjust the template path string below to match your actual frontend website structure
+        const targetPageUrl = `https://flexieduconsult.com.ng/news.html?id=${docRef.id}`;
+        
+        btn.innerText = "Summoning Googlebots...";
+        await notifyGoogleIndexers(targetPageUrl);
+
         location.reload();
     } catch (e) {
-        alert("Error!");
+        console.error(e);
+        alert("Error during publication!");
         btn.disabled = false;
         btn.innerText = "Publish Update";
     }
@@ -275,10 +312,10 @@ async function loadNews() {
 }
 
 window.deleteNews = async (id) => {
-    if(confirm("Delete?")) { await deleteDoc(doc(db, "news", id)); loadNews(); }
+    if(confirm("Delete?")) { await deleteDoc(doc(doc(db, "news", id))); loadNews(); }
 };
 
 loadNews();
 </script>
-</body>
-</html>
+</body> 
+</html>        
