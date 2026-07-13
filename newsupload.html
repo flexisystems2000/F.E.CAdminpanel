@@ -33,7 +33,7 @@
         .pdf-group { background: #fdfdfd; border: 2px dashed #ddd; padding: 15px; border-radius: 8px; }
         
         button { background:var(--green); color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; width:100%; font-weight:bold; }
-        .news-item { border-bottom:1px solid #eee; padding:15px 0; display: flex; align-items: center; gap: 15px; }
+       .news-item{   border-bottom:1px solid #eee;   padding:18px 0;    display:flex;   gap:15px;    align-items:flex-start;}
         .news-item img { width:60px; height:60px; object-fit:cover; border-radius:4px; }
         .badge { font-size: 10px; padding: 2px 6px; border-radius: 10px; background: #e0e0e0; margin-left: 5px; color: #333; }
         .delete-btn { background:var(--red); width: auto; padding: 5px 15px; }
@@ -45,17 +45,121 @@
 
 <div class="container">
     <div class="card">
-        <h3>Add New Post</h3>
+        <h3>📰 Publish New Article</h3>
+<p style="
+margin-top:-8px;
+font-size:13px;
+color:#666;
+">
+Fill in the article details below. SEO fields can be edited manually or generated automatically.
+</p>
         
-        <label>Title</label>
-        <input type="text" id="title" placeholder="News Title">
-        
-        <label>Main Content</label>
-        <textarea id="content" rows="4" placeholder="Full update content..."></textarea>
-        
+       <label>News Title</label>
+<input
+    type="text"
+    id="title"
+    placeholder="News Title"
+    oninput="generateSEO()"
+>
+
+<label>SEO Title</label>
+<input
+    type="text"
+    id="seoTitle"
+    placeholder="Google Search Title"
+>
+
+<label>Meta Description</label>
+<textarea
+    id="metaDescription"
+    rows="3"
+    maxlength="160"
+    placeholder="Write a short description for Google (150–160 characters)"
+></textarea>
+
+<div style="display:flex;
+gap:10px;
+flex-wrap:wrap;">
+
+<div style="flex:1;min-width:220px;">
+
+<label>Focus Keyword</label>
+<input type="text"
+id="focusKeyword"
+placeholder="Example: LAUTECH Post UTME Form 2026"></div>
+
+<div style="flex:1;min-width:220px;"><label>Slug</label>
+
+<input type="text"
+id="slug"
+placeholder="example-post-title"></div></div>
+
+<label>Main Content *</label>
+<textarea
+id="content"
+rows="8"
+placeholder="Write the full article here..."
+oninput="generateSEO()"
+></textarea>
+
+       <div style="
+background:#f8f9fa;
+border:1px solid #ddd;
+padding:15px;
+border-radius:8px;
+margin-bottom:20px;
+">
+
+<b style="color:#003366;">
+Google Search Preview
+</b>
+
+<div
+id="seoPreviewTitle"
+style="
+margin-top:10px;
+color:#1a0dab;
+font-size:19px;
+font-weight:bold;
+">
+Your SEO title will appear here
+</div>
+
+<div
+style="
+color:#006621;
+font-size:13px;
+margin:4px 0;
+">
+https://flexieduconsult.com.ng/news/
+<span id="seoPreviewSlug">
+your-post
+</span>
+</div>
+
+<div
+id="seoPreviewDesc"
+style="
+font-size:14px;
+color:#555;
+">
+Your meta description will appear here...
+</div>
+
+</div>
+ 
         <div class="file-section">
             <label style="color: var(--green);">📸 Main Content Image (Optional)</label>
             <input type="file" id="imageFile" accept="image/*">
+            <div
+id="currentImageInfo"
+style="
+font-size:12px;
+color:#2E8B57;
+margin-top:-10px;
+margin-bottom:10px;
+">
+</div>
         </div>
 
         <div class="table-builder">
@@ -92,11 +196,34 @@
             <label style="color: var(--blue); margin-bottom: 10px; font-size: 14px;">📄 PDF Attachment Details</label>
             <label>PDF File (Optional)</label>
             <input type="file" id="pdfFile" accept="application/pdf">
+            <div
+id="currentPdfInfo"
+style="
+font-size:12px;
+color:#2E8B57;
+margin-top:-10px;
+margin-bottom:10px;
+">
+</div>
             <label>PDF Cover/Thumbnail Image (Optional)</label>
             <input type="file" id="pdfThumbFile" accept="image/*">
         </div>
 
-        <button id="publishBtn" style="margin-top: 20px;" onclick="addNews()">Publish Update</button>
+<div style="display:flex; gap:10px;margin-top:20px;">
+<button id="publishBtn" onclick="addNews()" style="flex:1;" >🚀 Publish Article</button>
+
+<button
+id="cancelEditBtn"
+type="button"
+onclick="cancelEdit()"
+style="
+display:none;
+flex:1;
+background:#666;
+"
+>Cancel Edit</button>
+
+</div>
     </div>
 
     <div class="card">
@@ -107,7 +234,8 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {getFirestore, collection, addDoc,
+getDocs, getDoc, deleteDoc, updateDoc, doc, serverTimestamp, query, orderBy, where, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
@@ -120,6 +248,16 @@ const db = getFirestore(app);
 
 const CLOUD_NAME = "dwmbgd9jy";
 const UPLOAD_PRESET = "my_preset_123";
+
+// ==============================
+// EDIT MODE
+// ==============================
+
+
+                let editingPostId = null;
+let existingImageUrl = "";
+let existingPdfUrl = "";
+let existingPdfThumbUrl = "";
 
 // --- FIXED CSV HANDLER ---
 window.handleCSV = (input) => {
@@ -179,6 +317,128 @@ window.addCol = () => {
     });
 };
 
+// ==============================
+// SEO AUTO GENERATOR
+// ==============================
+
+window.generateSEO = () => {
+
+    const title =
+        document.getElementById("title").value.trim();
+
+    const content =
+        document.getElementById("content").value.trim();
+
+    const seoTitle =
+        document.getElementById("seoTitle");
+
+    const metaDescription =
+        document.getElementById("metaDescription");
+
+    const keyword =
+        document.getElementById("focusKeyword");
+
+let slug =
+document.getElementById("slug").value.trim();
+
+    // ----------------------
+    // Auto SEO Title
+    // ----------------------
+
+    if (!seoTitle.value.trim()) {
+        seoTitle.value = title;
+    }
+
+    // ----------------------
+    // Auto Focus Keyword
+    // ----------------------
+
+    if (!keyword.value.trim()) {
+        keyword.value = title;
+    }
+
+    // ----------------------
+    // Auto Slug
+    // ----------------------
+
+    if (!slug.value.trim()) {
+
+        slug.value = title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/^-|-$/g, "");
+
+    }
+
+    // ----------------------
+    // Auto Meta Description
+    // ----------------------
+
+    if (!metaDescription.value.trim()) {
+
+        let text = content
+            .replace(/\n/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        metaDescription.value =
+            text.substring(0, 157) +
+            (text.length > 157 ? "..." : "");
+
+    }
+
+    updateSEOPreview();
+
+};
+
+// ==============================
+// GOOGLE SEARCH PREVIEW
+// ==============================
+
+window.updateSEOPreview = () => {
+
+    const seoTitle =
+        document.getElementById("seoTitle").value;
+
+    const meta =
+        document.getElementById("metaDescription").value;
+
+    const slug =
+        document.getElementById("slug").value;
+
+    document.getElementById("seoPreviewTitle").innerText =
+        seoTitle || "Your SEO title will appear here";
+
+    document.getElementById("seoPreviewDesc").innerText =
+        meta || "Your meta description will appear here...";
+
+    document.getElementById("seoPreviewSlug").innerText =
+        slug || "your-post";
+
+};
+
+// ==============================
+// LIVE SEO UPDATES
+// ==============================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    [
+        "seoTitle",
+        "metaDescription",
+        "slug"
+    ].forEach(id => {
+
+        document
+            .getElementById(id)
+            .addEventListener("input", updateSEOPreview);
+
+    });
+
+});
+
 window.resetTable = () => {
     if(!confirm("Clear table data?")) return;
     document.getElementById('table-head').innerHTML = `<th><input type="text" placeholder="Header 1"></th>`;
@@ -214,108 +474,356 @@ async function uploadToCloudinary(file) {
     return data.secure_url;
 }
 
-// --- INSTANT GOOGLE INDEXING MICROSERVICE TRIGGER ---
-async function notifyGoogleIndexers(postUrl) {
-    console.log("Initializing instant Google indexing request for:", postUrl);
-    
-    // Your updated Render server base URL endpoint path
-    const renderServerUrl = 'https://flexicrawl.onrender.com/api/index-url'; 
+// ==============================
+// CHECK IF SLUG EXISTS
+// ==============================
 
-    try {
-        const response = await fetch(renderServerUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ url: postUrl })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            console.log("Googlebot Ping Success:", data.message);
-            alert("✨ Update Live! Googlebots have been summoned to crawl this page immediately.");
-        } else {
-            console.error("Googlebot Ping Failed:", data.error);
-            alert("Warning: Update saved, but Google instant indexing failed to process.");
+async function generateUniqueSlug(baseSlug){ let slug = baseSlug;
+ let counter = 1;
+ while(true){
+        const q = query(
+            collection(db,"news"),
+            where("slug","==",slug),
+            limit(1)
+        );
+        const snap = await getDocs(q);
+        if(snap.empty){
+            return slug;
         }
-    } catch (error) {
-        console.error("Network connection error to Render service:", error);
-    }
+        slug = `${baseSlug}-${counter}`;
+       counter++;
+   }
 }
 
 window.addNews = async () => {
-    const title = document.getElementById("title").value;
-    const content = document.getElementById("content").value;
+
+    const title = document.getElementById("title").value.trim();
+    const seoTitle = document.getElementById("seoTitle").value.trim();
+    const metaDescription = document.getElementById("metaDescription").value.trim();
+    const focusKeyword = document.getElementById("focusKeyword").value.trim();
+    const slug = document.getElementById("slug").value.trim();
+    const content = document.getElementById("content").value.trim();
+
     const imgFile = document.getElementById("imageFile").files[0];
     const pdfFile = document.getElementById("pdfFile").files[0];
     const pdfThumbFile = document.getElementById("pdfThumbFile").files[0];
+
     const btn = document.getElementById("publishBtn");
 
-    if (!title || !content) return alert("Fill required fields");
+    if (!title)
+        return alert("Please enter the news title.");
+
+    if (!content)
+        return alert("Please enter the article content.");
+
+    if (!slug)
+        return alert("Please enter an SEO slug.");
 
     try {
-        btn.innerText = "Publishing...";
+
         btn.disabled = true;
+        btn.innerText = "Uploading Files...";
 
-        const [imageUrl, pdfUrl, pdfThumbUrl] = await Promise.all([
-            uploadToCloudinary(imgFile),
-            uploadToCloudinary(pdfFile),
-            uploadToCloudinary(pdfThumbFile)
-        ]);
+        let [
+    imageUrl,
+    pdfUrl,
+    pdfThumbUrl
+] = await Promise.all([
+    uploadToCloudinary(imgFile),
+    uploadToCloudinary(pdfFile),
+    uploadToCloudinary(pdfThumbFile)
+]);
 
-        let tableData = generateTableHTML();
+if (!imageUrl) imageUrl = existingImageUrl;
 
-        // Save entry data to Firestore database setup
-        const docRef = await addDoc(collection(db, "news"), {
-            title, content, imageUrl, pdfUrl, pdfThumbUrl, tableData, timestamp: serverTimestamp()
-        });
+if (!pdfUrl) pdfUrl = existingPdfUrl;
 
-        alert("Update Saved to Database!");
+if (!pdfThumbUrl) pdfThumbUrl = existingPdfThumbUrl;
 
-        // Generate the real dynamic URL of your new page on the client platform
-        // Adjust the template path string below to match your actual frontend website structure
-        const targetPageUrl = `https://flexieduconsult.com.ng/news.html?id=${docRef.id}`;
-        
-        btn.innerText = "Summoning Googlebots...";
-        await notifyGoogleIndexers(targetPageUrl);
+        btn.innerText = "Building Article...";
 
-        location.reload();
-    } catch (e) {
-        console.error(e);
-        alert("Error during publication!");
+       if (!editingPostId) {
+    slug = await generateUniqueSlug(slug);
+}
+       const tableData = generateTableHTML();
+        const postData = {
+           title,
+           seoTitle,
+            metaDescription,
+           focusKeyword,
+           slug,
+           content,
+            imageUrl,
+           pdfUrl,
+            pdfThumbUrl,
+            tableData,
+           timestamp: serverTimestamp()
+        };
+
+        if (editingPostId) {
+   await updateDoc(
+       doc(db, "news", editingPostId),
+        postData
+    );
+    alert("Article updated successfully!");
+} else {
+   await addDoc(
+       collection(db, "news"),
+        postData
+    );
+   alert("Article published successfully!");
+}
+
+editingPostId = null;
+existingImageUrl = "";
+existingPdfUrl = "";
+existingPdfThumbUrl = "";
+btn.innerText = "🚀 Publish Article";
+btn.disabled = false;
+document.getElementById("cancelEditBtn").style.display = "none";
+location.reload();
+}
+    catch (err) {
+       console.error(err);
+      alert("Failed to publish article.");
         btn.disabled = false;
         btn.innerText = "Publish Update";
-    }
+   }
 };
 
 async function loadNews() {
-    const q = query(collection(db, "news"), orderBy("timestamp", "desc"));
-    const snap = await getDocs(q);
-    const list = document.getElementById("newsList");
-    list.innerHTML = "";
-    snap.forEach(d => {
-        const data = d.data();
-        const div = document.createElement("div");
-        div.className = "news-item";
-        div.innerHTML = `
-            <img src="${data.imageUrl || data.pdfThumbUrl || 'https://via.placeholder.com/60'}">
-            <div style="flex:1">
-                <div style="font-weight:bold">${data.title}</div>
-                ${data.pdfUrl ? '<span class="badge">PDF</span>' : ''}
-                ${data.tableData ? '<span class="badge">Table</span>' : ''}
-            </div>
-            <button class="delete-btn" onclick="deleteNews('${d.id}')">Delete</button>
+    const q = query(
+        collection(db, "news"),
+        orderBy("timestamp", "desc")
+    );
+   const snap = await getDocs(q);
+    const list =
+        document.getElementById("newsList");
+   list.innerHTML = "";
+   if (snap.empty) {
+       list.innerHTML = `
+        <div style="
+        text-align:center;
+        color:#777;
+        padding:30px;
+        ">
+            No published articles yet.
+        </div>
         `;
+        return;
+    }
+   snap.forEach(docSnap => {
+       const data = docSnap.data();
+       const id = docSnap.id;
+       let image =
+            data.imageUrl ||
+            data.pdfThumbUrl ||
+            "https://via.placeholder.com/80";
+      let date = "";
+        if (data.timestamp?.toDate) {
+           date =
+                data.timestamp
+                .toDate()
+                .toLocaleString();
+        }
+       const div =
+            document.createElement("div");
+        div.className = "news-item";
+       div.innerHTML = `
+<img
+src="${image}"
+style="
+width:80px;
+height:80px;
+border-radius:8px;
+object-fit:cover;
+">
+
+<div style="flex:1;">
+
+<div
+style="
+font-size:17px;
+font-weight:bold;
+color:#003366;
+margin-bottom:5px;
+">
+${data.title}
+</div>
+
+<div
+style="
+font-size:12px;
+color:#666;
+margin-bottom:6px;
+">
+📅 ${date || "Just now"}
+</div>
+
+<div
+style="
+font-size:12px;
+color:#2E8B57;
+margin-bottom:4px;
+">
+🔑 ${data.focusKeyword || "-"}
+</div>
+
+<div
+style="
+font-size:12px;
+color:#999;
+word-break:break-all;
+">
+https://flexieduconsult.com.ng/news/${data.slug || ""}
+</div>
+
+<div style="margin-top:8px;">
+
+${data.pdfUrl
+? `<span class="badge">PDF</span>`
+: ""}
+
+${data.tableData
+? `<span class="badge">TABLE</span>`
+: ""}
+
+${data.imageUrl
+? `<span class="badge">IMAGE</span>`
+: ""}
+
+</div>
+
+</div>
+
+<div
+style="
+display:flex;
+flex-direction:column;
+gap:8px;
+">
+
+<button
+style="
+background:#003366;
+padding:8px 12px;
+width:90px;
+"
+onclick="editNews('${id}')"
+>
+Edit
+</button>
+
+<button
+class="delete-btn"
+style="width:90px;"
+onclick="deleteNews('${id}')"
+>
+Delete
+</button>
+
+</div>
+
+`;
+
         list.appendChild(div);
-    });
+   });
 }
 
+window.editNews = async (id) => {
+    try {
+       const snap = await getDoc(
+            doc(db, "news", id)
+        );
+        if (!snap.exists()) {
+           alert("Article not found.");
+           return;
+        }
+       const data = snap.data();
+       editingPostId = id;
+        existingImageUrl = data.imageUrl || "";
+        existingPdfUrl = data.pdfUrl || "";
+        existingPdfThumbUrl = data.pdfThumbUrl || "";
+        document.getElementById("currentImageInfo").innerHTML =
+existingImageUrl
+? "Current image: ✓ Uploaded"
+: "";
+
+document.getElementById("currentPdfInfo").innerHTML =
+existingPdfUrl
+? "Current PDF: ✓ Attached"
+: "";
+        document.getElementById("title").value =
+            data.title || "";
+        document.getElementById("seoTitle").value =
+            data.seoTitle || "";
+       document.getElementById("metaDescription").value =
+            data.metaDescription || "";
+        document.getElementById("focusKeyword").value =
+            data.focusKeyword || "";
+       document.getElementById("slug").value =
+            data.slug || "";
+        document.getElementById("content").value =
+            data.content || "";
+       updateSEOPreview();
+       document.getElementById("publishBtn").innerText =
+            "💾 Update Article";
+       document.getElementById("cancelEditBtn").style.display =
+            "block";
+       window.scrollTo({
+           top:0,
+            behavior:"smooth"
+        });
+    }
+    catch(err){
+        console.error(err);
+        alert("Unable to load article.");
+    }
+};
+
+window.cancelEdit = () => {
+    editingPostId = null;
+    existingImageUrl = "";
+   existingPdfUrl = "";
+    existingPdfThumbUrl = "";
+    document.getElementById("title").value = "";
+    document.getElementById("seoTitle").value = "";
+    document.getElementById("metaDescription").value = "";
+    document.getElementById("focusKeyword").value = "";
+    document.getElementById("slug").value = "";
+   document.getElementById("content").value = "";
+    document.getElementById("imageFile").value = "";
+    document.getElementById("pdfFile").value = "";
+    document.getElementById("pdfThumbFile").value = "";
+    document.getElementById("currentImageInfo").innerHTML = "";
+    document.getElementById("currentPdfInfo").innerHTML = "";
+    document.getElementById("publishBtn").innerText =
+        "🚀 Publish Article";
+    document.getElementById("cancelEditBtn").style.display =
+        "none";
+    generateSEO();
+};
+
 window.deleteNews = async (id) => {
-    if(confirm("Delete?")) { await deleteDoc(doc(doc(db, "news", id))); loadNews(); }
+   const ok = confirm(
+        "Are you sure you want to delete this article?");
+    if (!ok) return;
+   try {
+        await deleteDoc(
+            doc(db, "news", id)
+        );
+       alert("Article deleted successfully.");
+        loadNews();
+   }
+    catch (err) {
+       console.error(err);
+       alert("Unable to delete article.");
+   }
 };
 
 loadNews();
+generateSEO();
+updateSEOPreview();
 </script>
 </body> 
 </html>        
