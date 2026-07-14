@@ -231,11 +231,9 @@ background:#666;
         <div id="newsList">Loading...</div>
     </div>
 </div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {getFirestore, collection, addDoc,
-getDocs, getDoc, deleteDoc, updateDoc, doc, serverTimestamp, query, orderBy, where, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, getDoc, deleteDoc, updateDoc, doc, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
@@ -245,225 +243,49 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
 const CLOUD_NAME = "dwmbgd9jy";
 const UPLOAD_PRESET = "my_preset_123";
 
-// ==============================
-// EDIT MODE
-// ==============================
-
-
-                let editingPostId = null;
+let editingPostId = null;
 let existingImageUrl = "";
 let existingPdfUrl = "";
 let existingPdfThumbUrl = "";
 
-// --- FIXED CSV HANDLER ---
-window.handleCSV = (input) => {
-    const file = input.files[0];
-    if (!file) return;
+// --- EXPOSE FUNCTIONS TO WINDOW ---
+window.addNews = addNews;
+window.editNews = editNews;
+window.deleteNews = deleteNews;
+window.cancelEdit = cancelEdit;
+window.addRow = addRow;
+window.addCol = addCol;
+window.handleCSV = handleCSV;
+window.resetTable = resetTable;
+window.generateSEO = generateSEO;
+window.updateSEOPreview = updateSEOPreview;
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const text = e.target.result;
-        const rows = text.split(/\r?\n/).filter(line => line.trim() !== "");
-        
-        if (rows.length > 0) {
-            const headRow = document.getElementById('table-head');
-            const body = document.getElementById('table-body');
-            
-            const delimiter = rows[0].includes(';') ? ';' : ',';
-            const cols = rows[0].split(delimiter);
-            
-            headRow.innerHTML = "";
-            cols.forEach(cell => {
-                headRow.innerHTML += `<th><input type="text" value="${cell.trim()}"></th>`;
-            });
-
-            body.innerHTML = "";
-            for (let i = 1; i < rows.length; i++) {
-                const cells = rows[i].split(delimiter);
-                const tr = document.createElement('tr');
-                for(let j=0; j<cols.length; j++){
-                    const val = cells[j] ? cells[j].trim() : "";
-                    tr.innerHTML += `<td><input type="text" value="${val}"></td>`;
-                }
-                body.appendChild(tr);
-            }
-        }
-        input.value = "";
-    };
-    reader.readAsText(file);
-};
-
-// --- TABLE BUILDER LOGIC ---
-window.addRow = () => {
-    const body = document.getElementById('table-body');
-    const colCount = document.getElementById('table-head').children.length;
-    const tr = document.createElement('tr');
-    for(let i=0; i<colCount; i++) {
-        tr.innerHTML += `<td><input type="text" placeholder="Data"></td>`;
-    }
-    body.appendChild(tr);
-};
-
-window.addCol = () => {
-    const headRow = document.getElementById('table-head');
-    const bodyRows = document.querySelectorAll('#table-body tr');
-    headRow.innerHTML += `<th><input type="text" placeholder="Header"></th>`;
-    bodyRows.forEach(row => {
-        row.innerHTML += `<td><input type="text" placeholder="Data"></td>`;
-    });
-};
-
-// ==============================
-// SEO AUTO GENERATOR
-// ==============================
-
-window.generateSEO = () => {
-
-    const title =
-        document.getElementById("title").value.trim();
-
-    const content =
-        document.getElementById("content").value.trim();
-
-    const seoTitle =
-        document.getElementById("seoTitle");
-
-    const metaDescription =
-        document.getElementById("metaDescription");
-
-    const keyword =
-        document.getElementById("focusKeyword");
-
-let slug =
-document.getElementById("slug").value.trim();
-
-    // ----------------------
-    // Auto SEO Title
-    // ----------------------
-
-    if (!seoTitle.value.trim()) {
-        seoTitle.value = title;
-    }
-
-    // ----------------------
-    // Auto Focus Keyword
-    // ----------------------
-
-    if (!keyword.value.trim()) {
-        keyword.value = title;
-    }
-
-    // ----------------------
-    // Auto Slug
-    // ----------------------
-
-    if (!slug.value.trim()) {
-
-        slug.value = title
-            .toLowerCase()
-            .replace(/[^a-z0-9\s-]/g, "")
-            .replace(/\s+/g, "-")
-            .replace(/-+/g, "-")
-            .replace(/^-|-$/g, "");
-
-    }
-
-    // ----------------------
-    // Auto Meta Description
-    // ----------------------
-
-    if (!metaDescription.value.trim()) {
-
-        let text = content
-            .replace(/\n/g, " ")
-            .replace(/\s+/g, " ")
-            .trim();
-
-        metaDescription.value =
-            text.substring(0, 157) +
-            (text.length > 157 ? "..." : "");
-
-    }
-
-    updateSEOPreview();
-
-};
-
-// ==============================
-// GOOGLE SEARCH PREVIEW
-// ==============================
-
-window.updateSEOPreview = () => {
-
-    const seoTitle =
-        document.getElementById("seoTitle").value;
-
-    const meta =
-        document.getElementById("metaDescription").value;
-
-    const slug =
-        document.getElementById("slug").value;
-
-    document.getElementById("seoPreviewTitle").innerText =
-        seoTitle || "Your SEO title will appear here";
-
-    document.getElementById("seoPreviewDesc").innerText =
-        meta || "Your meta description will appear here...";
-
-    document.getElementById("seoPreviewSlug").innerText =
-        slug || "your-post";
-
-};
-
-// ==============================
-// LIVE SEO UPDATES
-// ==============================
-
+// --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
-
-    [
-        "seoTitle",
-        "metaDescription",
-        "slug"
-    ].forEach(id => {
-
-        document
-            .getElementById(id)
-            .addEventListener("input", updateSEOPreview);
-
+    loadNews();
+    generateSEO();
+    ["seoTitle", "metaDescription", "slug"].forEach(id => {
+        document.getElementById(id).addEventListener("input", updateSEOPreview);
     });
-
 });
 
-window.resetTable = () => {
-    if(!confirm("Clear table data?")) return;
-    document.getElementById('table-head').innerHTML = `<th><input type="text" placeholder="Header 1"></th>`;
-    document.getElementById('table-body').innerHTML = `<tr><td><input type="text" placeholder="Data"></td></tr>`;
-};
-
-function generateTableHTML() {
-    const headInputs = document.querySelectorAll('#table-head input');
-    const bodyRows = document.querySelectorAll('#table-body tr');
-    if(headInputs.length === 0 || (headInputs[0].value.trim() === "" && bodyRows.length === 1 && bodyRows[0].querySelector('input').value.trim() === "")) return "";
-
-    let html = "<table><thead><tr>";
-    headInputs.forEach(input => html += `<th>${input.value || ''}</th>`);
-    html += "</tr></thead><tbody>";
-    
-    bodyRows.forEach(row => {
-        html += "<tr>";
-        row.querySelectorAll('input').forEach(input => html += `<td>${input.value || ''}</td>`);
-        html += "</tr>";
-    });
-    html += "</tbody></table>";
-    return html;
+// --- CORE FUNCTIONS ---
+async function generateUniqueSlug(slug) {
+    let finalSlug = slug;
+    let count = 1;
+    while (true) {
+        const q = query(collection(db, "news"), where("slug", "==", finalSlug));
+        const snap = await getDocs(q);
+        if (snap.empty || (editingPostId && snap.docs[0].id === editingPostId)) break;
+        finalSlug = `${slug}-${count}`;
+        count++;
+    }
+    return finalSlug;
 }
 
-// --- CLOUDINARY UPLOAD ---
 async function uploadToCloudinary(file) {
     if (!file) return "";
     const formData = new FormData();
@@ -474,356 +296,187 @@ async function uploadToCloudinary(file) {
     return data.secure_url;
 }
 
-// ==============================
-// CHECK IF SLUG EXISTS
-// ==============================
-
-async function generateUniqueSlug(baseSlug){ let slug = baseSlug;
- let counter = 1;
- while(true){
-        const q = query(
-            collection(db,"news"),
-            where("slug","==",slug),
-            limit(1)
-        );
-        const snap = await getDocs(q);
-        if(snap.empty){
-            return slug;
-        }
-        slug = `${baseSlug}-${counter}`;
-       counter++;
-   }
+function generateTableHTML() {
+    const headInputs = document.querySelectorAll('#table-head input');
+    const bodyRows = document.querySelectorAll('#table-body tr');
+    let html = "<table><thead><tr>";
+    headInputs.forEach(i => html += `<th>${i.value}</th>`);
+    html += "</tr></thead><tbody>";
+    bodyRows.forEach(row => {
+        html += "<tr>";
+        row.querySelectorAll('input').forEach(i => html += `<td>${i.value}</td>`);
+        html += "</tr>";
+    });
+    return html + "</tbody></table>";
 }
 
-window.addNews = async () => {
-
+async function addNews() {
     const title = document.getElementById("title").value.trim();
-    const seoTitle = document.getElementById("seoTitle").value.trim();
-    const metaDescription = document.getElementById("metaDescription").value.trim();
-    const focusKeyword = document.getElementById("focusKeyword").value.trim();
-    const slug = document.getElementById("slug").value.trim();
     const content = document.getElementById("content").value.trim();
-
-    const imgFile = document.getElementById("imageFile").files[0];
-    const pdfFile = document.getElementById("pdfFile").files[0];
-    const pdfThumbFile = document.getElementById("pdfThumbFile").files[0];
-
     const btn = document.getElementById("publishBtn");
+    
+    if (!title || !content) return alert("Please fill in Title and Content.");
 
-    if (!title)
-        return alert("Please enter the news title.");
-
-    if (!content)
-        return alert("Please enter the article content.");
-
-    if (!slug)
-        return alert("Please enter an SEO slug.");
+    btn.disabled = true;
+    btn.innerText = "Processing...";
 
     try {
+        const [img, pdf, thumb] = await Promise.all([
+            uploadToCloudinary(document.getElementById("imageFile").files[0]),
+            uploadToCloudinary(document.getElementById("pdfFile").files[0]),
+            uploadToCloudinary(document.getElementById("pdfThumbFile").files[0])
+        ]);
 
-        btn.disabled = true;
-        btn.innerText = "Uploading Files...";
+        let slug = document.getElementById("slug").value.trim();
+        if (!slug) slug = title.toLowerCase().replace(/[^a-z0-9]/g, "-");
+        slug = await generateUniqueSlug(slug);
 
-        let [
-    imageUrl,
-    pdfUrl,
-    pdfThumbUrl
-] = await Promise.all([
-    uploadToCloudinary(imgFile),
-    uploadToCloudinary(pdfFile),
-    uploadToCloudinary(pdfThumbFile)
-]);
-
-if (!imageUrl) imageUrl = existingImageUrl;
-
-if (!pdfUrl) pdfUrl = existingPdfUrl;
-
-if (!pdfThumbUrl) pdfThumbUrl = existingPdfThumbUrl;
-
-        btn.innerText = "Building Article...";
-
-       if (!editingPostId) {
-    slug = await generateUniqueSlug(slug);
-}
-       const tableData = generateTableHTML();
         const postData = {
-           title,
-           seoTitle,
-            metaDescription,
-           focusKeyword,
-           slug,
-           content,
-            imageUrl,
-           pdfUrl,
-            pdfThumbUrl,
-            tableData,
-           timestamp: serverTimestamp()
+            title,
+            seoTitle: document.getElementById("seoTitle").value,
+            metaDescription: document.getElementById("metaDescription").value,
+            focusKeyword: document.getElementById("focusKeyword").value,
+            slug,
+            content,
+            imageUrl: img || existingImageUrl,
+            pdfUrl: pdf || existingPdfUrl,
+            pdfThumbUrl: thumb || existingPdfThumbUrl,
+            tableData: generateTableHTML(),
+            timestamp: serverTimestamp()
         };
 
-        if (editingPostId) {
-   await updateDoc(
-       doc(db, "news", editingPostId),
-        postData
-    );
-    alert("Article updated successfully!");
-} else {
-   await addDoc(
-       collection(db, "news"),
-        postData
-    );
-   alert("Article published successfully!");
+        if (editingPostId) await updateDoc(doc(db, "news", editingPostId), postData);
+        else await addDoc(collection(db, "news"), postData);
+
+        alert("Article saved successfully!");
+        location.reload();
+    } catch (e) {
+        console.error(e);
+        alert("Failed to publish.");
+        btn.disabled = false;
+        btn.innerText = "🚀 Publish Article";
+    }
 }
 
-editingPostId = null;
-existingImageUrl = "";
-existingPdfUrl = "";
-existingPdfThumbUrl = "";
-btn.innerText = "🚀 Publish Article";
-btn.disabled = false;
-document.getElementById("cancelEditBtn").style.display = "none";
-location.reload();
+// --- UI HELPERS ---
+function generateSEO() {
+    const title = document.getElementById("title").value.trim();
+    const content = document.getElementById("content").value.trim();
+    const seoTitle = document.getElementById("seoTitle");
+    const metaDesc = document.getElementById("metaDescription");
+    const slug = document.getElementById("slug");
+    const kw = document.getElementById("focusKeyword");
+
+    if (!seoTitle.value) seoTitle.value = title;
+    if (!kw.value) kw.value = title;
+    if (!slug.value) slug.value = title.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    if (!metaDesc.value) metaDesc.value = content.substring(0, 157);
+    updateSEOPreview();
 }
-    catch (err) {
-       console.error(err);
-      alert("Failed to publish article.");
-        btn.disabled = false;
-        btn.innerText = "Publish Update";
-   }
-};
+
+function updateSEOPreview() {
+    document.getElementById("seoPreviewTitle").innerText = document.getElementById("seoTitle").value || "Your Title";
+    document.getElementById("seoPreviewDesc").innerText = document.getElementById("metaDescription").value || "Your description...";
+    document.getElementById("seoPreviewSlug").innerText = document.getElementById("slug").value || "your-slug";
+}
+
+function handleCSV(input) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const rows = e.target.result.split(/\r?\n/).filter(x => x.trim());
+        const headRow = document.getElementById('table-head');
+        const body = document.getElementById('table-body');
+        const cols = rows[0].split(rows[0].includes(';') ? ';' : ',');
+        headRow.innerHTML = cols.map(c => `<th><input type="text" value="${c.trim()}"></th>`).join('');
+        body.innerHTML = rows.slice(1).map(r => `<tr>${r.split(rows[0].includes(';') ? ';' : ',').map(c => `<td><input type="text" value="${c.trim()}"></td>`).join('')}</tr>`).join('');
+    };
+    reader.readAsText(input.files[0]);
+}
+
+function addRow() {
+    const body = document.getElementById('table-body');
+    const cols = document.getElementById('table-head').children.length;
+    body.innerHTML += `<tr>${'<td><input type="text"></td>'.repeat(cols)}</tr>`;
+}
+
+function addCol() {
+    document.getElementById('table-head').innerHTML += `<th><input type="text"></th>`;
+    document.querySelectorAll('#table-body tr').forEach(r => r.innerHTML += `<td><input type="text"></td>`);
+}
+
+function resetTable() {
+    if(!confirm("Clear table?")) return;
+    document.getElementById('table-head').innerHTML = `<th><input type="text" placeholder="Header 1"></th>`;
+    document.getElementById('table-body').innerHTML = `<tr><td><input type="text" placeholder="Data"></td></tr>`;
+}
+
+async function editNews(id) {
+    const snap = await getDoc(doc(db, "news", id));
+    if (!snap.exists()) return alert("Not found");
+    const data = snap.data();
+    editingPostId = id;
+    existingImageUrl = data.imageUrl || "";
+    existingPdfUrl = data.pdfUrl || "";
+    existingPdfThumbUrl = data.pdfThumbUrl || "";
+    document.getElementById("title").value = data.title;
+    document.getElementById("seoTitle").value = data.seoTitle;
+    document.getElementById("metaDescription").value = data.metaDescription;
+    document.getElementById("focusKeyword").value = data.focusKeyword;
+    document.getElementById("slug").value = data.slug;
+    document.getElementById("content").value = data.content;
+    document.getElementById("publishBtn").innerText = "💾 Update Article";
+    document.getElementById("cancelEditBtn").style.display = "block";
+    updateSEOPreview();
+}
+
+function cancelEdit() {
+    location.reload();
+}
+
+async function deleteNews(id) {
+    if (!confirm("Delete?")) return;
+    await deleteDoc(doc(db, "news", id));
+    loadNews();
+}
 
 async function loadNews() {
-    const q = query(
-        collection(db, "news"),
-        orderBy("timestamp", "desc")
-    );
-   const snap = await getDocs(q);
-    const list =
-        document.getElementById("newsList");
-   list.innerHTML = "";
-   if (snap.empty) {
-       list.innerHTML = `
-        <div style="
-        text-align:center;
-        color:#777;
-        padding:30px;
-        ">
-            No published articles yet.
-        </div>
-        `;
+    const snap = await getDocs(query(collection(db, "news"), orderBy("timestamp", "desc")));
+    const list = document.getElementById("newsList");
+    list.innerHTML = "";
+    
+    if (snap.empty) {
+        list.innerHTML = `<div style="text-align:center; color:#777; padding:30px;">No published articles yet.</div>`;
         return;
     }
-   snap.forEach(docSnap => {
-       const data = docSnap.data();
-       const id = docSnap.id;
-       let image =
-            data.imageUrl ||
-            data.pdfThumbUrl ||
-            "https://via.placeholder.com/80";
-      let date = "";
-        if (data.timestamp?.toDate) {
-           date =
-                data.timestamp
-                .toDate()
-                .toLocaleString();
-        }
-       const div =
-            document.createElement("div");
+
+    snap.forEach(docSnap => {
+        const data = docSnap.data();
+        const id = docSnap.id;
+        const image = data.imageUrl || data.pdfThumbUrl || "https://via.placeholder.com/80";
+        const date = data.timestamp?.toDate ? data.timestamp.toDate().toLocaleString() : "Just now";
+        
+        const div = document.createElement("div");
         div.className = "news-item";
-       div.innerHTML = `
-<img
-src="${image}"
-style="
-width:80px;
-height:80px;
-border-radius:8px;
-object-fit:cover;
-">
-
-<div style="flex:1;">
-
-<div
-style="
-font-size:17px;
-font-weight:bold;
-color:#003366;
-margin-bottom:5px;
-">
-${data.title}
-</div>
-
-<div
-style="
-font-size:12px;
-color:#666;
-margin-bottom:6px;
-">
-📅 ${date || "Just now"}
-</div>
-
-<div
-style="
-font-size:12px;
-color:#2E8B57;
-margin-bottom:4px;
-">
-🔑 ${data.focusKeyword || "-"}
-</div>
-
-<div
-style="
-font-size:12px;
-color:#999;
-word-break:break-all;
-">
-https://flexieduconsult.com.ng/news/${data.slug || ""}
-</div>
-
-<div style="margin-top:8px;">
-
-${data.pdfUrl
-? `<span class="badge">PDF</span>`
-: ""}
-
-${data.tableData
-? `<span class="badge">TABLE</span>`
-: ""}
-
-${data.imageUrl
-? `<span class="badge">IMAGE</span>`
-: ""}
-
-</div>
-
-</div>
-
-<div
-style="
-display:flex;
-flex-direction:column;
-gap:8px;
-">
-
-<button
-style="
-background:#003366;
-padding:8px 12px;
-width:90px;
-"
-onclick="editNews('${id}')"
->
-Edit
-</button>
-
-<button
-class="delete-btn"
-style="width:90px;"
-onclick="deleteNews('${id}')"
->
-Delete
-</button>
-
-</div>
-
-`;
-
+        div.innerHTML = `
+            <img src="${image}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
+            <div style="flex:1;">
+                <div style="font-size:14px; font-weight:bold; color:#003366;">${data.title}</div>
+                <div style="font-size:11px; color:#666; margin:4px 0;">📅 ${date}</div>
+                <div style="font-size:11px; color:#2E8B57;">🔑 ${data.focusKeyword || "-"}</div>
+                <div style="margin-top:5px;">
+                    ${data.pdfUrl ? `<span class="badge">PDF</span>` : ""}
+                    ${data.tableData ? `<span class="badge">TABLE</span>` : ""}
+                    ${data.imageUrl ? `<span class="badge">IMAGE</span>` : ""}
+                </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+                <button style="background:#003366; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer;" onclick="editNews('${id}')">Edit</button>
+                <button class="delete-btn" style="background:#b22222; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer;" onclick="deleteNews('${id}')">Delete</button>
+            </div>
+        `;
         list.appendChild(div);
-   });
+    });
 }
 
-window.editNews = async (id) => {
-    try {
-       const snap = await getDoc(
-            doc(db, "news", id)
-        );
-        if (!snap.exists()) {
-           alert("Article not found.");
-           return;
-        }
-       const data = snap.data();
-       editingPostId = id;
-        existingImageUrl = data.imageUrl || "";
-        existingPdfUrl = data.pdfUrl || "";
-        existingPdfThumbUrl = data.pdfThumbUrl || "";
-        document.getElementById("currentImageInfo").innerHTML =
-existingImageUrl
-? "Current image: ✓ Uploaded"
-: "";
-
-document.getElementById("currentPdfInfo").innerHTML =
-existingPdfUrl
-? "Current PDF: ✓ Attached"
-: "";
-        document.getElementById("title").value =
-            data.title || "";
-        document.getElementById("seoTitle").value =
-            data.seoTitle || "";
-       document.getElementById("metaDescription").value =
-            data.metaDescription || "";
-        document.getElementById("focusKeyword").value =
-            data.focusKeyword || "";
-       document.getElementById("slug").value =
-            data.slug || "";
-        document.getElementById("content").value =
-            data.content || "";
-       updateSEOPreview();
-       document.getElementById("publishBtn").innerText =
-            "💾 Update Article";
-       document.getElementById("cancelEditBtn").style.display =
-            "block";
-       window.scrollTo({
-           top:0,
-            behavior:"smooth"
-        });
-    }
-    catch(err){
-        console.error(err);
-        alert("Unable to load article.");
-    }
-};
-
-window.cancelEdit = () => {
-    editingPostId = null;
-    existingImageUrl = "";
-   existingPdfUrl = "";
-    existingPdfThumbUrl = "";
-    document.getElementById("title").value = "";
-    document.getElementById("seoTitle").value = "";
-    document.getElementById("metaDescription").value = "";
-    document.getElementById("focusKeyword").value = "";
-    document.getElementById("slug").value = "";
-   document.getElementById("content").value = "";
-    document.getElementById("imageFile").value = "";
-    document.getElementById("pdfFile").value = "";
-    document.getElementById("pdfThumbFile").value = "";
-    document.getElementById("currentImageInfo").innerHTML = "";
-    document.getElementById("currentPdfInfo").innerHTML = "";
-    document.getElementById("publishBtn").innerText =
-        "🚀 Publish Article";
-    document.getElementById("cancelEditBtn").style.display =
-        "none";
-    generateSEO();
-};
-
-window.deleteNews = async (id) => {
-   const ok = confirm(
-        "Are you sure you want to delete this article?");
-    if (!ok) return;
-   try {
-        await deleteDoc(
-            doc(db, "news", id)
-        );
-       alert("Article deleted successfully.");
-        loadNews();
-   }
-    catch (err) {
-       console.error(err);
-       alert("Unable to delete article.");
-   }
-};
-
-loadNews();
-generateSEO();
-updateSEOPreview();
-</script>
-</body> 
-</html>        
+            </script>
+    
