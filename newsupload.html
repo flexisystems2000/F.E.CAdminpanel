@@ -299,6 +299,14 @@ async function uploadToCloudinary(file) {
 function generateTableHTML() {
     const headInputs = document.querySelectorAll('#table-head input');
     const bodyRows = document.querySelectorAll('#table-body tr');
+    
+    // Check if the table is just the default empty state
+    const isHeaderEmpty = headInputs.length === 1 && headInputs[0].value.trim() === "";
+    const isRowEmpty = bodyRows.length === 1 && bodyRows[0].querySelector('input').value.trim() === "";
+    
+    // If table is empty, return null so it doesn't get saved
+    if (isHeaderEmpty && isRowEmpty) return null;
+
     let html = "<table><thead><tr>";
     headInputs.forEach(i => html += `<th>${i.value}</th>`);
     html += "</tr></thead><tbody>";
@@ -331,6 +339,7 @@ async function addNews() {
         if (!slug) slug = title.toLowerCase().replace(/[^a-z0-9]/g, "-");
         slug = await generateUniqueSlug(slug);
 
+        // Build the data object
         const postData = {
             title,
             seoTitle: document.getElementById("seoTitle").value,
@@ -341,9 +350,14 @@ async function addNews() {
             imageUrl: img || existingImageUrl,
             pdfUrl: pdf || existingPdfUrl,
             pdfThumbUrl: thumb || existingPdfThumbUrl,
-            tableData: generateTableHTML(),
             timestamp: serverTimestamp()
         };
+
+        // Only add tableData to the object if it exists (is not null)
+        const tableData = generateTableHTML();
+        if (tableData) {
+            postData.tableData = tableData;
+        }
 
         if (editingPostId) await updateDoc(doc(db, "news", editingPostId), postData);
         else await addDoc(collection(db, "news"), postData);
@@ -479,4 +493,5 @@ async function loadNews() {
 }
 
             </script>
-    
+    </body>
+    </html>
