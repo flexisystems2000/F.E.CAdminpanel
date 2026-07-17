@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexi Announcements</title>
+    <style>
+        body { font-family: sans-serif; background-color: #ffffff; color: #333; margin: 0; padding: 0; }
+        header { background-color: #001f3f; color: white; padding: 20px; text-align: center; }
+        .container { padding: 20px; max-width: 500px; margin: auto; }
+        
+        /* Form Styling */
+        .admin-form { background: #f4f4f4; padding: 15px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #ddd; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #001f3f; color: white; border: none; border-radius: 4px; font-weight: bold; }
+
+        /* Announcement Display Styling */
+        .announcement-box { border-left: 5px solid #001f3f; background: #eef6ff; padding: 15px; margin-bottom: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<header><h1>Flexi Announcements</h1></header>
+
+<div class="container">
+    <!-- Admin Form -->
+    <div class="admin-form">
+        <h3>Create New Announcement</h3>
+        <input type="text" id="title" placeholder="Title">
+        <textarea id="content" placeholder="Content"></textarea>
+        <select id="type"><option value="timer">Timer</option><option value="schedule">Schedule</option></select>
+        <input type="datetime-local" id="targetDate">
+        <button onclick="postAnnouncement()">Publish</button>
+    </div>
+
+    <!-- Display Area -->
+    <div id="displayArea"><h3>Live Announcements:</h3></div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js";
+
+    const firebaseConfig = {
+    apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+    authDomain: "flexieduconsult.com.ng",
+    projectId: "waec2026jamb2027"
+};
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 1. POST ANNOUNCEMENT
+    window.postAnnouncement = async () => {
+        const title = document.getElementById('title').value;
+        const content = document.getElementById('content').value;
+        const type = document.getElementById('type').value;
+        const targetDate = document.getElementById('targetDate').value;
+
+        await addDoc(collection(db, "announcements"), { title, content, type, targetDate, createdAt: new Date() });
+        alert("Published!");
+    };
+
+    // 2. LISTEN FOR UPDATES (Displays automatically)
+    const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+        const display = document.getElementById('displayArea');
+        display.innerHTML = "<h3>Live Announcements:</h3>";
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            display.innerHTML += `
+                <div class="announcement-box">
+                    <strong>${data.title}</strong><br>
+                    <small>${data.type.toUpperCase()} | Target: ${data.targetDate}</small>
+                    <p>${data.content}</p>
+                </div>
+            `;
+        });
+    });
+</script>
+</body>
+</html>
