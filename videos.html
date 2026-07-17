@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flexi Edu Admin</title>
+  <style>
+    :root { --brand-blue: #1e3a8a; }
+    body { font-family: sans-serif; background: #f8fafc; margin: 0; padding-bottom: 50px; }
+    header { background: var(--brand-blue); color: white; padding: 1rem; text-align: center; font-weight: bold; font-size: 1.2rem; }
+    .container { max-width: 600px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+    button { background: var(--brand-blue); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+    .card { background: white; margin: 15px auto; max-width: 600px; padding: 15px; border-radius: 8px; border-left: 5px solid var(--brand-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+    .btn-del { background: #dc2626; }
+    .btn-edit { background: #64748b; }
+  </style>
+</head>
+<body>
+
+<header>Flexi Edu Admin Dashboard</header>
+
+<div class="container">
+  <input type="text" id="vTitle" placeholder="Video Title">
+  <input type="text" id="vLink" placeholder="Paste YouTube Link">
+  <textarea id="vDesc" placeholder="Description"></textarea>
+  <button onclick="addVideo()">Publish Video</button>
+</div>
+
+<div id="videoGrid"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+        apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+        authDomain: "flexieduconsult.com.ng",
+        databaseURL: "https://waec2026jamb2027-default-rtdb.firebaseio.com",
+        projectId: "waec2026jamb2027",
+    };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ADD VIDEO
+  window.addVideo = async () => {
+    const title = document.getElementById('vTitle').value;
+    const link = document.getElementById('vLink').value;
+    const desc = document.getElementById('vDesc').value;
+    if(!title || !link) return alert("Please enter Title and Link");
+    await addDoc(collection(db, "videos"), { title, link, desc, createdAt: new Date() });
+    alert("Video Added!");
+  };
+
+  // DELETE VIDEO
+  window.deleteVideo = async (id) => {
+    if(confirm("Delete this video?")) await deleteDoc(doc(db, "videos", id));
+  };
+
+  // EDIT MODE
+  window.editMode = (id) => {
+    const card = document.getElementById(`card-${id}`);
+    const title = card.querySelector('.title-text').innerText;
+    const desc = card.querySelector('.desc-text').innerText;
+    const link = card.querySelector('.link-text').innerText;
+    card.innerHTML = `
+      <input type="text" id="edit-title-${id}" value="${title}">
+      <input type="text" id="edit-link-${id}" value="${link}">
+      <textarea id="edit-desc-${id}">${desc}</textarea>
+      <button onclick="saveEdit('${id}')" style="background:#059669;">Save Changes</button>
+      <button onclick="location.reload()" style="background:#64748b;">Cancel</button>
+    `;
+  };
+
+  // SAVE EDIT
+  window.saveEdit = async (id) => {
+    await updateDoc(doc(db, "videos", id), {
+      title: document.getElementById(`edit-title-${id}`).value,
+      description: document.getElementById(`edit-desc-${id}`).value,
+      link: document.getElementById(`edit-link-${id}`).value
+    });
+    alert("Updated!");
+    location.reload();
+  };
+
+  // RENDER VIDEOS (Corrected to use 'desc' instead of 'description')
+  onSnapshot(query(collection(db, "videos"), orderBy("createdAt", "desc")), (snapshot) => {
+    const grid = document.getElementById('videoGrid');
+    grid.innerHTML = "";
+    snapshot.forEach((doc) => {
+      const v = doc.data();
+      // Handle missing v.link cases safely
+      const rawLink = v.link || ""; 
+      const id = rawLink.includes("youtu.be/") ? rawLink.split("youtu.be/")[1].split("?")[0] : 
+                 rawLink.includes("v=") ? rawLink.split("v=")[1].split("&")[0] : "";
+      
+      grid.innerHTML += `
+        <div class="card" id="card-${doc.id}">
+          <iframe src="https://www.youtube.com/embed/${id}" width="100%" height="200" allowfullscreen></iframe>
+          <h3 class="title-text">${v.title || 'Untitled'}</h3>
+          <p class="desc-text">${v.desc || ''}</p> 
+          <p class="link-text" style="display:none">${v.link}</p>
+          <div class="btn-group">
+            <button class="btn-edit" onclick="editMode('${doc.id}')">Edit</button>
+            <button class="btn-del" onclick="deleteVideo('${doc.id}')">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+  });
+</script>
+</body>
+</html>
