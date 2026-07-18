@@ -1,81 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flexi Announcements</title>
-    <style>
-        body { font-family: sans-serif; background-color: #ffffff; color: #333; margin: 0; padding: 0; }
-        header { background-color: #001f3f; color: white; padding: 20px; text-align: center; }
-        .container { padding: 20px; max-width: 500px; margin: auto; }
-        
-        /* Form Styling */
-        .admin-form { background: #f4f4f4; padding: 15px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #ddd; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background-color: #001f3f; color: white; border: none; border-radius: 4px; font-weight: bold; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexi Announcements</title>
+<style>
+    :root { --primary: #001f3f; --bg: #f5f7fb; }
+    body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #333; }
+    header { background: var(--primary); color: #fff; text-align: center; padding: 15px; }
+    .container { width: 92%; max-width: 500px; margin: 20px auto; }
+    .admin-form { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
+    h2 { font-size: 1.2rem; color: var(--primary); margin-bottom: 15px; }
+    label { display: block; margin-top: 12px; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; }
+    /* Fix for overflow */
+    input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
+    textarea { height: 100px; resize: vertical; }
+    button { width: 100%; padding: 12px; margin-top: 20px; border: none; border-radius: 6px; background: var(--primary); color: #fff; font-weight: bold; cursor: pointer; }
+    
+    /* Loading Spinner SVG Style */
+    .spinner { width: 20px; height: 20px; animation: spin 1s linear infinite; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* Announcement Display Styling */
-        .announcement-box { border-left: 5px solid #001f3f; background: #eef6ff; padding: 15px; margin-bottom: 10px; border-radius: 4px; }
-    </style>
+    .announcement-box { background: #fff; border-left: 5px solid var(--primary); padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .meta { font-size: 0.75rem; color: #777; margin-bottom: 8px; }
+    .countdown { color: #d35400; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; }
+</style>
 </head>
 <body>
-
-<header><h1>Flexi Announcements</h1></header>
-
+<header>
+<h1>Flexi Announcements</h1></header>
 <div class="container">
-    <!-- Admin Form -->
-    <div class="admin-form">
-        <h3>Create New Announcement</h3>
-        <input type="text" id="title" placeholder="Title">
-        <textarea id="content" placeholder="Content"></textarea>
-        <select id="type"><option value="timer">Timer</option><option value="schedule">Schedule</option></select>
-        <input type="datetime-local" id="targetDate">
-        <button onclick="postAnnouncement()">Publish</button>
-    </div>
-
-    <!-- Display Area -->
-    <div id="displayArea"><h3>Live Announcements:</h3></div>
+<div class="admin-form">
+<h2>Create Announcement</h2>
+<label>Title</label><input
+type="text"
+id="title"
+placeholder="Enter announcement title">
+<label>Content</label><textarea
+id="content"
+placeholder="Enter announcement details"></textarea>
+<label>Announcement Type</label>
+<select id="type">
+<option value="timer">Countdown Timer</option>
+<option value="schedule">Scheduled Announcement</option></select>
+<label>Target Date & Time</label>
+<input
+type="datetime-local"
+id="targetDate">
+<button id="publishBtn">Publish Announcement</button>
+<div id="status"></div></div>
+<div id="displayArea">
+<h2 class="live-title">Live Announcements</h2>
+<div class="loading">Loading announcements...</div></div>
 </div>
-
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js";
-
-    const firebaseConfig = {
+  // Firebase Imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+// Firebase Config
+const firebaseConfig = {
     apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
     authDomain: "flexieduconsult.com.ng",
     projectId: "waec2026jamb2027"
 };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
 
-    // 1. POST ANNOUNCEMENT
-    window.postAnnouncement = async () => {
-        const title = document.getElementById('title').value;
-        const content = document.getElementById('content').value;
-        const type = document.getElementById('type').value;
-        const targetDate = document.getElementById('targetDate').value;
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-        await addDoc(collection(db, "announcements"), { title, content, type, targetDate, createdAt: new Date() });
-        alert("Published!");
-    };
+// DOM Elements
+const titleInput = document.getElementById("title");
+const contentInput = document.getElementById("content");
+const typeInput = document.getElementById("type");
+const targetDateInput = document.getElementById("targetDate");
 
-    // 2. LISTEN FOR UPDATES (Displays automatically)
-    const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
-    onSnapshot(q, (snapshot) => {
-        const display = document.getElementById('displayArea');
-        display.innerHTML = "<h3>Live Announcements:</h3>";
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            display.innerHTML += `
-                <div class="announcement-box">
-                    <strong>${data.title}</strong><br>
-                    <small>${data.type.toUpperCase()} | Target: ${data.targetDate}</small>
-                    <p>${data.content}</p>
-                </div>
-            `;
+const publishBtn = document.getElementById("publishBtn");
+const status = document.getElementById("status");
+const displayArea = document.getElementById("displayArea");
+
+
+// Show Status Message
+function showStatus(message, type = "success") {
+    status.textContent = message;
+    status.className = type;
+    setTimeout(() => {
+        status.textContent = "";
+        status.className = "";
+    }, 3000);
+}
+
+// Clear Form
+function clearForm() {
+    titleInput.value = "";
+    contentInput.value = "";
+    targetDateInput.value = "";
+    typeInput.value = "timer";
+}
+
+// Publish Announcement
+async function postAnnouncement() {
+    const title = titleInput.value.trim();
+    const content = contentInput.value.trim();
+    const type = typeInput.value;
+    const targetDate = targetDateInput.value;
+
+    // Validation
+    if (!title) {
+        showStatus("Please enter a title.", "error");
+        return;
+    }
+
+    if (!content) {
+        showStatus("Please enter announcement content.", "error");
+        return;
+    }
+
+    if (!targetDate) {
+        showStatus("Please select a target date.", "error");
+        return;
+    }
+
+    publishBtn.disabled = true;
+    publishBtn.textContent = "Publishing...";
+
+    try {
+        await addDoc(collection(db, "announcements"), { title, content, type, targetDate, createdAt: serverTimestamp() 
+        });
+        clearForm();
+        showStatus("Announcement published successfully!");
+    } catch (error) {
+        console.error(error);
+        showStatus("Failed to publish announcement.", "error");
+    } finally {
+        publishBtn.disabled = false;
+        publishBtn.textContent = "Publish Announcement";
+    }
+}
+
+// Publish Button Event
+publishBtn.addEventListener("click", postAnnouncement);
+
+// Countdown Formatter
+function formatCountdown(ms) {
+   if (ms <= 0) return "Time reached";
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(
+        (ms % (1000 * 60 * 60 * 24)) /
+        (1000 * 60 * 60)
+    );
+
+    const minutes = Math.floor(
+        (ms % (1000 * 60 * 60)) /
+        (1000 * 60)
+    );
+
+    const seconds = Math.floor(
+        (ms % (1000 * 60)) /
+        1000
+    );
+
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
+// Real-time Listener
+const announcementsQuery = query(
+    collection(db, "announcements"),
+    orderBy("createdAt", "desc")
+);
+
+let announcements = [];
+
+// Listen for Firestore Updates
+onSnapshot(announcementsQuery, (snapshot) => {
+    announcements = [];
+    snapshot.forEach((document) => {
+        announcements.push({
+            id: document.id,
+            ...document.data()
         });
     });
+    renderAnnouncements();
+}, (error) => {
+    console.error(error);
+    displayArea.innerHTML = `
+        <div class="no-data">
+            Failed to load announcements.
+        </div>
+    `;
+});
+
+// Render Announcements
+function renderAnnouncements() {
+    displayArea.innerHTML = `<h2 class="live-title">Live Announcements</h2>`;
+
+    if (announcements.length === 0) {
+        displayArea.innerHTML += `<div class="no-data">No announcements available.</div>`;
+        return;
+    }
+
+    const now = new Date();
+    announcements.forEach((item) => {
+        const target = new Date(item.targetDate);
+        if (item.type === "schedule" && target > now) return;
+
+        const box = document.createElement("div");
+        box.className = "announcement-box";
+        box.innerHTML = `
+            <h3>${item.title}</h3>
+            <div class="meta">${item.type.toUpperCase()} • ${target.toLocaleString()}</div>
+            <p>${item.content}</p>
+            ${item.type === "timer" ? `<div class="countdown" data-target="${item.targetDate}"></div>` : ''}
+        `;
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.className = "delete-btn";
+        deleteBtn.onclick = async () => {
+            if (confirm("Delete this?")) await deleteDoc(doc(db, "announcements", item.id));
+        };
+
+        box.appendChild(deleteBtn);
+        displayArea.appendChild(box);
+    });
+    updateCountdowns();
+}
+
+function updateCountdowns() {
+    document.querySelectorAll(".countdown").forEach((el) => {
+        const diff = new Date(el.dataset.target) - new Date();
+        // SVG Loading Spinner
+        el.innerHTML = `
+            <svg class="spinner" viewBox="0 0 50 50">
+                <circle cx="25" cy="25" r="20" fill="none" stroke="#d35400" stroke-width="5"></circle>
+            </svg> 
+            ${formatCountdown(diff)}`;
+    });
+}
 </script>
 </body>
 </html>
