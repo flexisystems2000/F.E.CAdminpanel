@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motivational Quotes Publisher - Flexi Educational Consult</title>
+  <style>
+    :root {
+      --primary: #0d47a1;
+      --primary-hover: #1565c0;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .admin-container {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    header {
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      color: var(--primary);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    textarea, input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      color: var(--text-main);
+      background-color: #fff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.5;
+    }
+
+    /* Custom Color Inputs */
+    .color-picker-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .status-msg {
+      margin-top: 12px;
+      font-size: 0.9rem;
+      text-align: center;
+      display: none;
+    }
+
+    .status-msg.success { color: var(--success); display: block; }
+    .status-msg.error { color: var(--danger); display: block; }
+
+    /* Feed & Custom Styled Quote Cards */
+    .feed-header h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .feed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .published-card {
+      position: relative;
+      min-height: 220px;
+      border-radius: 12px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    /* Soft overlay to improve readability */
+    .published-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 12px;
+      z-index: 1;
+    }
+
+    .published-card-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .published-card blockquote {
+      font-size: 1.2rem;
+      line-height: 1.5;
+      font-style: italic;
+      margin-bottom: 12px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .published-card cite {
+      font-size: 0.95rem;
+      font-style: normal;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-actions {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    .btn-delete {
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+
+    .btn-delete:hover {
+      background: #ffffff;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-container">
+    <header>
+      <h1>Flexi Educational Consult</h1>
+      <p>Motivational Quotes Publisher</p>
+    </header>
+
+    <!-- Publisher Form -->
+    <div class="card">
+      <form id="quoteForm">
+        <div class="form-group">
+          <label for="quoteText">Motivational Quote</label>
+          <textarea id="quoteText" required placeholder="Enter the quote here..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="quoteAuthor">Author / Source</label>
+          <input type="text" id="quoteAuthor" required placeholder="e.g., Nelson Mandela, Maya Angelou, Unknown">
+        </div>
+
+        <div class="form-group">
+          <label for="bgImageInput">Background Image Design</label>
+          <input type="file" id="bgImageInput" accept="image/*" required>
+        </div>
+
+        <!-- Color Selection Row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="textColor">Quote Text Color</label>
+            <div class="color-picker-wrapper">
+              <input type="color" id="textColor" value="#ffffff">
+              <span id="textColorHex">#ffffff</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="authorColor">Author Text Color</label>
+            <div class="color-picker-wrapper">
+              <input type="color" id="authorColor" value="#f1f5f9">
+              <span id="authorColorHex">#f1f5f9</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">Publish to Firestore</button>
+        <div id="statusMsg" class="status-msg"></div>
+      </form>
+    </div>
+
+    <!-- Published Quotes Feed -->
+    <section>
+      <div class="feed-header">
+        <h2>Published Quotes</h2>
+      </div>
+
+      <div id="quotesFeed" class="feed-list">
+        <div class="empty-state">Loading quotes...</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // Firebase Credentials
+    const firebaseConfig = {
+            apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+            authDomain: "waec2026jamb2027.firebaseapp.com",
+            databaseURL: "https://waec2026jamb2027-default-rtdb.firebaseio.com",
+            projectId: "waec2026jamb2027",
+            storageBucket: "waec2026jamb2027.firebasestorage.app",
+            messagingSenderId: "465373608641",
+            appId: "1:465373608641:web:03d21cead99a3c9b65f240",
+            measurementId: "G-XD6YTGGC30"
+        };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const quotesCollection = collection(db, "quotes");
+
+    // UI Elements
+    const quoteForm = document.getElementById('quoteForm');
+    const quoteText = document.getElementById('quoteText');
+    const quoteAuthor = document.getElementById('quoteAuthor');
+    const bgImageInput = document.getElementById('bgImageInput');
+    const textColor = document.getElementById('textColor');
+    const authorColor = document.getElementById('authorColor');
+    const textColorHex = document.getElementById('textColorHex');
+    const authorColorHex = document.getElementById('authorColorHex');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const quotesFeed = document.getElementById('quotesFeed');
+
+    // Update color hex labels on input change
+    textColor.addEventListener('input', (e) => textColorHex.textContent = e.target.value);
+    authorColor.addEventListener('input', (e) => authorColorHex.textContent = e.target.value);
+
+    // Convert Image File to Base64 String
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Publish Quote to Firestore
+    quoteForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const text = quoteText.value.trim();
+      const author = quoteAuthor.value.trim();
+      const file = bgImageInput.files[0];
+
+      if (!text || !author || !file) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Uploading & Publishing...';
+
+      try {
+        const bgImageBase64 = await fileToBase64(file);
+
+        await addDoc(quotesCollection, {
+          text: text,
+          author: author,
+          bgImage: bgImageBase64,
+          textColor: textColor.value,
+          authorColor: authorColor.value,
+          createdAt: serverTimestamp()
+        });
+
+        quoteForm.reset();
+        textColorHex.textContent = '#ffffff';
+        authorColorHex.textContent = '#f1f5f9';
+        showStatus('Quote published successfully!', 'success');
+      } catch (error) {
+        console.error("Error publishing quote: ", error);
+        showStatus('Failed to publish quote. Image might be too large.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Publish to Firestore';
+      }
+    });
+
+    function showStatus(message, type) {
+      statusMsg.textContent = message;
+      statusMsg.className = `status-msg ${type}`;
+      setTimeout(() => {
+        statusMsg.className = 'status-msg';
+      }, 3000);
+    }
+
+    // Real-time Firestore Listener
+    const q = query(quotesCollection, orderBy("createdAt", "desc"));
+
+    onSnapshot(q, (snapshot) => {
+      quotesFeed.innerHTML = '';
+
+      if (snapshot.empty) {
+        quotesFeed.innerHTML = `<div class="empty-state">No published quotes found.</div>`;
+        return;
+      }
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const id = docSnap.id;
+
+        const card = document.createElement('div');
+        card.className = 'published-card';
+        card.style.backgroundImage = `url('${data.bgImage}')`;
+
+        card.innerHTML = `
+          <div class="published-card-content">
+            <blockquote style="color: ${data.textColor || '#ffffff'};">"${escapeHtml(data.text)}"</blockquote>
+            <cite style="color: ${data.authorColor || '#f1f5f9'};">— ${escapeHtml(data.author)}</cite>
+          </div>
+          <div class="card-actions">
+            <button class="btn-delete" data-id="${id}">Delete</button>
+          </div>
+        `;
+
+        quotesFeed.appendChild(card);
+      });
+
+      document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const docId = e.target.getAttribute('data-id');
+          deleteQuote(docId);
+        });
+      });
+    });
+
+    async function deleteQuote(docId) {
+      if (confirm('Delete this quote from Firestore?')) {
+        try {
+          await deleteDoc(doc(db, "quotes", docId));
+        } catch (error) {
+          console.error("Error deleting document: ", error);
+          alert('Could not delete document.');
+        }
+      }
+    }
+
+    function escapeHtml(str) {
+      return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
+    }
+  </script>
+</body>
+</html>
