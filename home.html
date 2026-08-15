@@ -231,7 +231,7 @@
             } else {
                 const centerName = localStorage.getItem('centerName') || "Authorized Center";
                 const centerID = localStorage.getItem('centerID') || "ID-000";
-                document.getElementById('centerBadge').innerText = `\( {centerName} [ \){centerID}]`;           
+                document.getElementById('centerBadge').innerText = centerName + " [" + centerID + "]";
             }
         });
 
