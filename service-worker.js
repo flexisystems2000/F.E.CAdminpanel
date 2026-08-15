@@ -1,157 +1,115 @@
-const CACHE_NAME = "fec-admin-offline-v4";
-
+const CACHE_NAME = "fec-admin-offline-v5";
 const OFFLINE_PAGE = "./offline.html";
 
-
 // ======================================================
-// INSTALL
+// INSTALL – precache the offline page
 // ======================================================
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.add(OFFLINE_PAGE);
+    })
+  );
 
-self.addEventListener("install", event => {
-
-    event.waitUntil(
-
-        caches.open(CACHE_NAME)
-            .then(cache => {
-
-                return cache.add(OFFLINE_PAGE);
-
-            })
-
-    );
-
-    self.skipWaiting();
+  // Activate immediately
+  self.skipWaiting();
 });
 
-
 // ======================================================
-// ACTIVATE
+// ACTIVATE – clean up old caches
 // ======================================================
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      );
+    })
+  );
 
-self.addEventListener("activate", event => {
-
-    event.waitUntil(
-
-        caches.keys().then(keys => {
-
-            return Promise.all(
-
-                keys
-                    .filter(key => key !== CACHE_NAME)
-                    .map(key => caches.delete(key))
-
-            );
-
-        })
-
-    );
-
-    self.clients.claim();
+  // Take control of all open clients right away
+  self.clients.claim();
 });
-
 
 // ======================================================
 // FETCH
 // ======================================================
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
 
-self.addEventListener("fetch", event => {
+  // Only handle GET requests
+  if (request.method !== "GET") {
+    return;
+  }
 
-    const request = event.request;
+  // Handle page navigations (HTML)
+  if (request.mode === "navigate") {
+    event.respondWith(handleNavigation(request));
+    return;
+  }
 
-
-    /*
-     * Handle every HTML/page navigation.
-     */
-
-    if (request.mode === "navigate") {
-
-        event.respondWith(
-
-            handlePageNavigation(request)
-
-        );
-
-        return;
-    }
-
-
-    /*
-     * Other resources.
-     */
-
-    event.respondWith(
-
-        fetch(request)
-            .catch(() => {
-
-                return caches.match(request);
-
-            })
-
-    );
-
+  // For other assets (JS, CSS, images, etc.)
+  event.respondWith(
+    fetch(request)
+      .then((response) => {
+        // Optionally cache successful responses
+        return response;
+      })
+      .catch(() => {
+        return caches.match(request);
+      })
+  );
 });
 
-
 // ======================================================
-// PAGE NAVIGATION
+// NAVIGATION HANDLER (the important part)
 // ======================================================
+async function handleNavigation(request) {
+  try {
+    // Always try the network first
+    const networkResponse = await fetch(request, {
+      cache: "no-store",
+    });
 
-async function handlePageNavigation(request) {
-
-    /*
-     * If browser reports offline,
-     * immediately show offline page.
-     */
-
-    if (self.navigator &&
-        self.navigator.onLine === false) {
-
-        return caches.match(OFFLINE_PAGE);
+    // If we got a valid response, return it
+    if (networkResponse && networkResponse.ok) {
+      return networkResponse;
     }
 
+    // Server returned an error → show offline page
+    return await caches.match(OFFLINE_PAGE);
+  } catch (error) {
+    // Network completely failed → show offline page
+    const offlineResponse = await caches.match(OFFLINE_PAGE);
 
-    /*
-     * Browser thinks we're online.
-     * Verify by actually requesting the page.
-     */
-
-    try {
-
-        const response = await fetch(
-            request,
-            {
-                cache: "no-store"
-            }
-        );
-
-
-        /*
-         * Successful server response.
-         */
-
-        if (response &&
-            response.status >= 200 &&
-            response.status < 400) {
-
-            return response;
-        }
-
-
-        /*
-         * Server couldn't provide the page.
-         */
-
-        return caches.match(OFFLINE_PAGE);
-
-    } catch (error) {
-
-        /*
-         * No network connection.
-         */
-
-        return caches.match(OFFLINE_PAGE);
-
+    if (offlineResponse) {
+      return offlineResponse;
     }
 
+    // Absolute last resort
+    return new Response(
+      `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Offline</title>
+        </head>
+        <body style="font-family:Arial;text-align:center;padding:40px;">
+          <h1>You're Offline</h1>
+          <p>Please check your internet connection.</p>
+          <button onclick="location.reload()">Try Again</button>
+        </body>
+      </html>
+      `,
+      {
+        status: 503,
+        statusText: "Service Unavailable",
+        headers: { "Content-Type": "text/html" },
+      }
+    );
+  }
 }
