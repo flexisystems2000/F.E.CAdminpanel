@@ -40,7 +40,6 @@
             font-weight: 800;
         }
 
-        /* Center Info Badge */
         #centerBadge {
             display: inline-block;
             margin-top: 10px;
@@ -48,13 +47,12 @@
             background: white;
             border: 2px solid var(--accent-purple);
             color: var(--accent-purple);
-            border-radius: 25px; /* Consistent curved style */
+            border-radius: 25px;
             font-size: 0.85rem;
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
-        /* 2-Column Grid */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -69,7 +67,7 @@
             align-items: center;
             justify-content: center;
             aspect-ratio: 1 / 1;
-            border-radius: 28px; /* High-curvature design */
+            border-radius: 28px;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.95rem;
@@ -86,7 +84,6 @@
             opacity: 0.9;
         }
 
-        /* Gradient Palette */
         .c1 { background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); }
         .c2 { background: linear-gradient(135deg, #483d8b 0%, #6a5acd 100%); }
         .c3 { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
@@ -113,8 +110,56 @@
             cursor: pointer;
             transition: 0.3s;
         }
-        
+
         #logoutBtn:hover { background: #feebeb; }
+
+        /* Offline overlay */
+        #offlineOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            font-family: Arial, sans-serif;
+        }
+
+        #offlineOverlay .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        #offlineOverlay h2 {
+            margin: 0 0 10px;
+            color: #111;
+            font-size: 24px;
+        }
+
+        #offlineOverlay p {
+            color: #777;
+            line-height: 1.5;
+            margin: 0;
+            font-size: 15px;
+        }
+
+        #offlineRetryBtn {
+            margin-top: 20px;
+            border: none;
+            background: #075E54;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        #offlineRetryBtn:active {
+            transform: scale(0.97);
+        }
     </style>
 </head>
 <body>
@@ -130,20 +175,32 @@
         <a href="adminexpo.html" class="card c2">Upload Expo</a>
         <a href="adminlocation.html" class="card c3">Manage Locations</a>
         <a href="videos.html" class="card c4">upload YouTube Videos</a>
-       <a href="announcement.html" class="card c4">Publish system announcement</a>
+        <a href="announcement.html" class="card c4">Publish system announcement</a>
         <a href="adminpurchase.html" class="card c5">update Cart</a>
         <a href="newsupload.html" class="card c6">Enter Current News Update</a>
-       <a href="pdf.html" class="card c6">Upload PDFs</a>
+        <a href="pdf.html" class="card c6">Upload PDFs</a>
         <a href="admincenter.html" class="card c6">My Center Hub</a>
         <a href="CBTupdates.html" class="card c7">Check Center CBT updates</a>
         <a href="staff.html" class="card c7">Tutor Employment</a>
         <a href="quote.html" class="card c8">Enter Daily Motivational Quotes</a>
         <a href="flag.html" class="card c8">Review flagged account</a>
-        
     </main>
 
     <div class="logout-section">
         <button id="logoutBtn">Logout System</button>
+    </div>
+
+    <!-- Offline overlay (stays on same page – no history trap) -->
+    <div id="offlineOverlay">
+        <div>
+            <div class="icon">📡</div>
+            <h2>You're Offline</h2>
+            <p>
+                Please check your internet connection<br>
+                and try again.
+            </p>
+            <button id="offlineRetryBtn">🔄 Try Again</button>
+        </div>
     </div>
 
     <script type="module">
@@ -164,22 +221,23 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Security check and dynamic UI update
+        // Security check – do NOT redirect to login while offline
         onAuthStateChanged(auth, (user) => {
             if (!user) {
-                // Kick out unauthorized access
-                window.location.href = "index.html";
+                if (navigator.onLine) {
+                    window.location.href = "index.html";
+                }
+                // If offline, stay on this page and let the overlay handle it
             } else {
-                // Fetch details from LocalStorage (set during index.html login)
                 const centerName = localStorage.getItem('centerName') || "Authorized Center";
                 const centerID = localStorage.getItem('centerID') || "ID-000";
-                document.getElementById('centerBadge').innerText = `${centerName} [${centerID}]`;
+                document.getElementById('centerBadge').innerText = `\( {centerName} [ \){centerID}]`;
             }
         });
 
         // Logout logic
         document.getElementById('logoutBtn').addEventListener('click', () => {
-            if(confirm("Are you sure you want to logout?")) {
+            if (confirm("Are you sure you want to logout?")) {
                 signOut(auth).then(() => {
                     localStorage.clear();
                     window.location.href = "index.html";
@@ -187,5 +245,45 @@
             }
         });
     </script>
+
+    <script>
+        // ========== OFFLINE HANDLING (no page navigation) ==========
+        const overlay = document.getElementById("offlineOverlay");
+        const retryBtn = document.getElementById("offlineRetryBtn");
+
+        function showOffline() {
+            overlay.style.display = "flex";
+        }
+
+        function hideOffline() {
+            overlay.style.display = "none";
+        }
+
+        function checkOnline() {
+            if (navigator.onLine) {
+                hideOffline();
+            } else {
+                showOffline();
+            }
+        }
+
+        window.addEventListener("offline", showOffline);
+        window.addEventListener("online", hideOffline);
+
+        retryBtn.addEventListener("click", () => {
+            if (navigator.onLine) {
+                hideOffline();
+            } else {
+                retryBtn.innerText = "Still offline...";
+                setTimeout(() => {
+                    retryBtn.innerText = "🔄 Try Again";
+                }, 1200);
+            }
+        });
+
+        // Run once on load
+        checkOnline();
+    </script>
+
 </body>
 </html>
