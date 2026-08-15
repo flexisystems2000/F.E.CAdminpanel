@@ -1,161 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're Offline</title>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-    <title>You're Offline</title>
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #ffffff;
+    }
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+    }
 
-        html,
-        body {
-            margin: 0;
-            width: 100%;
-            height: 100%;
-        }
+    .container {
+      width: 100%;
+      max-width: 380px;
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #ffffff;
+    .icon {
+      width: 110px;
+      height: 110px;
+      margin: 0 auto 25px;
+      border-radius: 50%;
+      background: #075E54;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      color: #111111;
+    }
 
-            text-align: center;
+    p {
+      margin: 0;
+      line-height: 1.6;
+      color: #777777;
+      font-size: 15px;
+    }
 
-            padding: 24px;
-        }
+    button {
+      margin-top: 28px;
+      border: none;
+      background: #075E54;
+      color: white;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-        .container {
-            width: 100%;
-            max-width: 380px;
-        }
+    button:active {
+      transform: scale(0.97);
+    }
 
-        .icon {
-            width: 110px;
-            height: 110px;
-
-            margin: 0 auto 25px;
-
-            border-radius: 50%;
-
-            background: #075E54;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            font-size: 48px;
-
-            box-shadow:
-                0 12px 30px rgba(0,0,0,.12);
-        }
-
-        h1 {
-            margin: 0 0 12px;
-
-            font-size: 28px;
-
-            color: #111111;
-        }
-
-        p {
-            margin: 0;
-
-            line-height: 1.6;
-
-            color: #777777;
-
-            font-size: 15px;
-        }
-
-        button {
-            margin-top: 28px;
-
-            border: none;
-
-            background: #075E54;
-
-            color: white;
-
-            padding: 14px 28px;
-
-            border-radius: 12px;
-
-            font-size: 15px;
-
-            font-weight: bold;
-        }
-
-        button:active {
-            transform: scale(.97);
-        }
-
-        .brand {
-            margin-top: 20px;
-
-            font-size: 12px;
-
-            color: #999999;
-        }
-    </style>
+    .brand {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #999999;
+    }
+  </style>
 </head>
 
 <body>
 
-    <div class="container">
+  <div class="container">
+    <div class="icon">📡</div>
 
-        <div class="icon">
-            📡
-        </div>
+    <h1>You're Offline</h1>
 
-        <h1>
-            You're Offline
-        </h1>
+    <p>
+      We couldn't connect to F.E.C Admin Suite.<br>
+      Please check your internet connection and try again.
+    </p>
 
-        <p>
-            We couldn't connect to F.E.C Admin Suite.
-            Please check your internet connection and try again.
-        </p>
+    <button onclick="tryAgain()">
+      🔄 Try Again
+    </button>
 
-        <button onclick="retry()">
-            🔄 Try Again
-        </button>
-
-        <div class="brand">
-            F.E.C Admin Suite
-        </div>
-
+    <div class="brand">
+      F.E.C Admin Suite
     </div>
+  </div>
 
-    <script>
+  <script>
+    // Prevent this offline page from stacking up badly in history
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState({ offline: true }, "", window.location.href);
+    }
 
-        function retry() {
+    function goHome() {
+      // Prefer going back if there is real history, otherwise go to the main panel
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "./";
+      }
+    }
 
-            if (navigator.onLine) {
+    function tryAgain() {
+      if (navigator.onLine) {
+        // We are online again → leave the offline page cleanly
+        goHome();
+      } else {
+        alert("You're still offline. Please check your internet connection.");
+      }
+    }
 
-                window.location.href =
-                    "./";
+    // Auto-recover when the connection comes back
+    window.addEventListener("online", () => {
+      // Small delay so the network is truly ready
+      setTimeout(() => {
+        goHome();
+      }, 400);
+    });
 
-            } else {
-
-                alert(
-                    "You're still offline. Please check your internet connection."
-                );
-
-            }
-        }
-
-    </script>
+    // Handle the system / browser Back button while on this page
+    window.addEventListener("popstate", () => {
+      if (!navigator.onLine) {
+        // Still offline → stay on this offline screen instead of breaking
+        window.history.replaceState({ offline: true }, "", window.location.href);
+      }
+    });
+  </script>
 
 </body>
 </html>
