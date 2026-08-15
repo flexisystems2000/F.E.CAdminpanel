@@ -1,6 +1,11 @@
-const CACHE_NAME = "fec-admin-offline-v1";
+const CACHE_NAME = "fec-admin-offline-v4";
 
 const OFFLINE_PAGE = "./offline.html";
+
+
+// ======================================================
+// INSTALL
+// ======================================================
 
 self.addEventListener("install", event => {
 
@@ -18,6 +23,10 @@ self.addEventListener("install", event => {
     self.skipWaiting();
 });
 
+
+// ======================================================
+// ACTIVATE
+// ======================================================
 
 self.addEventListener("activate", event => {
 
@@ -41,21 +50,108 @@ self.addEventListener("activate", event => {
 });
 
 
+// ======================================================
+// FETCH
+// ======================================================
+
 self.addEventListener("fetch", event => {
 
-    if (event.request.mode === "navigate") {
+    const request = event.request;
+
+
+    /*
+     * Handle every HTML/page navigation.
+     */
+
+    if (request.mode === "navigate") {
 
         event.respondWith(
 
-            fetch(event.request)
-                .catch(() => {
-
-                    return caches.match(OFFLINE_PAGE);
-
-                })
+            handlePageNavigation(request)
 
         );
 
+        return;
     }
 
+
+    /*
+     * Other resources.
+     */
+
+    event.respondWith(
+
+        fetch(request)
+            .catch(() => {
+
+                return caches.match(request);
+
+            })
+
+    );
+
 });
+
+
+// ======================================================
+// PAGE NAVIGATION
+// ======================================================
+
+async function handlePageNavigation(request) {
+
+    /*
+     * If browser reports offline,
+     * immediately show offline page.
+     */
+
+    if (self.navigator &&
+        self.navigator.onLine === false) {
+
+        return caches.match(OFFLINE_PAGE);
+    }
+
+
+    /*
+     * Browser thinks we're online.
+     * Verify by actually requesting the page.
+     */
+
+    try {
+
+        const response = await fetch(
+            request,
+            {
+                cache: "no-store"
+            }
+        );
+
+
+        /*
+         * Successful server response.
+         */
+
+        if (response &&
+            response.status >= 200 &&
+            response.status < 400) {
+
+            return response;
+        }
+
+
+        /*
+         * Server couldn't provide the page.
+         */
+
+        return caches.match(OFFLINE_PAGE);
+
+    } catch (error) {
+
+        /*
+         * No network connection.
+         */
+
+        return caches.match(OFFLINE_PAGE);
+
+    }
+
+}
