@@ -1,115 +1,39 @@
-const CACHE_NAME = "fec-admin-offline-v5";
-const OFFLINE_PAGE = "./offline.html";
+const CACHE_NAME = "fec-admin-offline-v6";
 
-// ======================================================
-// INSTALL – precache the offline page
-// ======================================================
+// Install
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.add(OFFLINE_PAGE);
-    })
-  );
-
-  // Activate immediately
   self.skipWaiting();
 });
 
-// ======================================================
-// ACTIVATE – clean up old caches
-// ======================================================
+// Activate – clean old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
+    caches.keys().then((keys) =>
+      Promise.all(
         keys
           .filter((key) => key !== CACHE_NAME)
           .map((key) => caches.delete(key))
-      );
-    })
+      )
+    )
   );
-
-  // Take control of all open clients right away
   self.clients.claim();
 });
 
-// ======================================================
-// FETCH
-// ======================================================
+// Fetch – do NOT hijack navigations with offline.html
 self.addEventListener("fetch", (event) => {
   const request = event.request;
 
-  // Only handle GET requests
-  if (request.method !== "GET") {
-    return;
-  }
+  if (request.method !== "GET") return;
 
-  // Handle page navigations (HTML)
+  // Let page navigations go to the network normally.
+  // If they fail, the browser/WebView handles it.
+  // This prevents the offline.html trap loop.
   if (request.mode === "navigate") {
-    event.respondWith(handleNavigation(request));
-    return;
+    return; // important: do not call event.respondWith
   }
 
-  // For other assets (JS, CSS, images, etc.)
+  // For other assets only
   event.respondWith(
-    fetch(request)
-      .then((response) => {
-        // Optionally cache successful responses
-        return response;
-      })
-      .catch(() => {
-        return caches.match(request);
-      })
+    fetch(request).catch(() => caches.match(request))
   );
 });
-
-// ======================================================
-// NAVIGATION HANDLER (the important part)
-// ======================================================
-async function handleNavigation(request) {
-  try {
-    // Always try the network first
-    const networkResponse = await fetch(request, {
-      cache: "no-store",
-    });
-
-    // If we got a valid response, return it
-    if (networkResponse && networkResponse.ok) {
-      return networkResponse;
-    }
-
-    // Server returned an error → show offline page
-    return await caches.match(OFFLINE_PAGE);
-  } catch (error) {
-    // Network completely failed → show offline page
-    const offlineResponse = await caches.match(OFFLINE_PAGE);
-
-    if (offlineResponse) {
-      return offlineResponse;
-    }
-
-    // Absolute last resort
-    return new Response(
-      `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Offline</title>
-        </head>
-        <body style="font-family:Arial;text-align:center;padding:40px;">
-          <h1>You're Offline</h1>
-          <p>Please check your internet connection.</p>
-          <button onclick="location.reload()">Try Again</button>
-        </body>
-      </html>
-      `,
-      {
-        status: 503,
-        statusText: "Service Unavailable",
-        headers: { "Content-Type": "text/html" },
-      }
-    );
-  }
-}
