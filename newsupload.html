@@ -4,494 +4,3174 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flexi Admin Panel | Pro</title>
+
     <style>
-        :root { --blue:#003366; --green:#2E8B57; --bg:#f4f7f6; --red:#b22222; }
-        body { margin:0; font-family:'Segoe UI', sans-serif; background:var(--bg); padding-bottom: 50px; }
-        header { background:var(--blue); color:white; padding:15px; font-weight:bold; text-align:center; }
-        .container { max-width:750px; margin:20px auto; width:95%; }
-        .card { background:white; padding:20px; border-radius:10px; margin-bottom:15px; border-top:5px solid var(--green); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h3 { margin-top: 0; color: var(--blue); }
-        label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #666; }
-        input, textarea { width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box; }
-        
-        /* Table Builder Styling */
-        .table-builder { background: #f0f4f8; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #d1d9e0; }
-        .builder-grid { overflow-x: auto; margin-bottom: 10px; }
-        #manual-table { border-collapse: collapse; background: white; width: 100%; }
-        #manual-table input { margin-bottom: 0; border: none; border-radius: 0; padding: 8px; font-size: 13px; }
-        #manual-table th, #manual-table td { border: 1px solid #ccc; }
-        #manual-table th { background: #eee; }
-        
-        .builder-btns { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; }
-        .mini-btn { 
-            flex: 1; min-width: 80px; padding: 8px; font-size: 11px; 
-            background: #555; color: white; border: none; border-radius: 4px; 
-            cursor: pointer; text-align: center; font-weight: bold;
+        :root {
+            --blue:#003366;
+            --green:#2E8B57;
+            --bg:#f4f7f6;
+            --red:#b22222;
+            --orange:#e67e22;
         }
 
-        .file-section { background: #fff; padding: 10px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 15px; }
-        .pdf-group { background: #fdfdfd; border: 2px dashed #ddd; padding: 15px; border-radius: 8px; }
-        
-        button { background:var(--green); color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; width:100%; font-weight:bold; }
-       .news-item{   border-bottom:1px solid #eee;   padding:18px 0;    display:flex;   gap:15px;    align-items:flex-start;}
-        .news-item img { width:60px; height:60px; object-fit:cover; border-radius:4px; }
-        .badge { font-size: 10px; padding: 2px 6px; border-radius: 10px; background: #e0e0e0; margin-left: 5px; color: #333; }
-        .delete-btn { background:var(--red); width: auto; padding: 5px 15px; }
+        * {
+            box-sizing:border-box;
+        }
+
+        body {
+            margin:0;
+            font-family:'Segoe UI',sans-serif;
+            background:var(--bg);
+            padding-bottom:50px;
+        }
+
+        header {
+            background:var(--blue);
+            color:white;
+            padding:15px;
+            font-weight:bold;
+            text-align:center;
+        }
+
+        .container {
+            max-width:750px;
+            margin:20px auto;
+            width:95%;
+        }
+
+        .card {
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            margin-bottom:15px;
+            border-top:5px solid var(--green);
+            box-shadow:0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h3 {
+            margin-top:0;
+            color:var(--blue);
+        }
+
+        label {
+            display:block;
+            font-size:12px;
+            font-weight:bold;
+            margin-bottom:5px;
+            color:#666;
+        }
+
+        input,
+        textarea {
+            width:100%;
+            padding:10px;
+            margin-bottom:15px;
+            border:1px solid #ccc;
+            border-radius:6px;
+            box-sizing:border-box;
+            font-family:inherit;
+        }
+
+        textarea {
+            resize:vertical;
+            line-height:1.6;
+        }
+
+        /* ==============================
+           FORMAT GUIDE
+        ============================== */
+
+        .format-guide {
+            background:#eef6ff;
+            border:1px solid #c9dff5;
+            padding:13px;
+            border-radius:8px;
+            margin-bottom:12px;
+            font-size:12px;
+            color:#444;
+        }
+
+        .format-guide strong {
+            color:var(--blue);
+        }
+
+        .format-grid {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:6px 15px;
+            margin-top:8px;
+        }
+
+        .format-item {
+            background:white;
+            border:1px solid #e2e2e2;
+            border-radius:5px;
+            padding:6px 8px;
+        }
+
+        .format-item code {
+            color:var(--blue);
+            font-weight:bold;
+        }
+
+        /* ==============================
+           CONTENT CONTROLS
+        ============================== */
+
+        .content-controls {
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+            margin-bottom:8px;
+        }
+
+        .content-btn {
+            background:#555;
+            color:white;
+            border:none;
+            padding:8px 10px;
+            border-radius:5px;
+            cursor:pointer;
+            font-size:11px;
+            font-weight:bold;
+        }
+
+        .content-btn:hover {
+            opacity:.9;
+        }
+
+        .content-btn.table {
+            background:var(--green);
+        }
+
+        .content-btn.preview {
+            background:var(--blue);
+        }
+
+        /* ==============================
+           TABLE BUILDER
+        ============================== */
+
+        .table-builder {
+            background:#f0f4f8;
+            padding:15px;
+            border-radius:8px;
+            margin-bottom:15px;
+            border:1px solid #d1d9e0;
+        }
+
+        .table-builder-title {
+            color:var(--blue);
+            font-size:14px;
+            font-weight:bold;
+            margin-bottom:4px;
+        }
+
+        .table-builder-help {
+            font-size:11px;
+            color:#777;
+            margin-bottom:12px;
+        }
+
+        .builder-grid {
+            overflow-x:auto;
+            margin-bottom:10px;
+        }
+
+        #manual-table {
+            border-collapse:collapse;
+            background:white;
+            width:100%;
+        }
+
+        #manual-table input {
+            margin-bottom:0;
+            border:none;
+            border-radius:0;
+            padding:8px;
+            font-size:13px;
+            min-width:100px;
+        }
+
+        #manual-table th,
+        #manual-table td {
+            border:1px solid #ccc;
+        }
+
+        #manual-table th {
+            background:#eee;
+        }
+
+        .builder-btns {
+            display:flex;
+            gap:5px;
+            margin-bottom:10px;
+            flex-wrap:wrap;
+        }
+
+        .mini-btn {
+            flex:1;
+            min-width:80px;
+            padding:8px;
+            font-size:11px;
+            background:#555;
+            color:white;
+            border:none;
+            border-radius:4px;
+            cursor:pointer;
+            text-align:center;
+            font-weight:bold;
+        }
+
+        .insert-table-btn {
+            background:var(--green);
+            width:100%;
+            margin-top:5px;
+        }
+
+        .table-status {
+            margin-top:8px;
+            font-size:11px;
+            color:#2E8B57;
+            font-weight:bold;
+            min-height:16px;
+        }
+
+        /* ==============================
+           PREVIEW
+        ============================== */
+
+        #articlePreview {
+            display:none;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:8px;
+            padding:18px;
+            margin-top:10px;
+            margin-bottom:15px;
+            line-height:1.7;
+        }
+
+        #articlePreview h2 {
+            color:var(--blue);
+            margin-top:20px;
+        }
+
+        #articlePreview h3 {
+            color:var(--green);
+        }
+
+        #articlePreview blockquote {
+            border-left:4px solid var(--green);
+            margin:15px 0;
+            padding:10px 15px;
+            background:#f3f8f5;
+        }
+
+        #articlePreview table {
+            width:100%;
+            border-collapse:collapse;
+            margin:15px 0;
+        }
+
+        #articlePreview th,
+        #articlePreview td {
+            border:1px solid #ddd;
+            padding:8px;
+            text-align:left;
+        }
+
+        #articlePreview th {
+            background:var(--blue);
+            color:white;
+        }
+
+        /* ==============================
+           FILE SECTIONS
+        ============================== */
+
+        .file-section {
+            background:#fff;
+            padding:10px;
+            border:1px solid #eee;
+            border-radius:6px;
+            margin-bottom:15px;
+        }
+
+        .pdf-group {
+            background:#fdfdfd;
+            border:2px dashed #ddd;
+            padding:15px;
+            border-radius:8px;
+        }
+
+        button {
+            background:var(--green);
+            color:white;
+            border:none;
+            padding:12px;
+            border-radius:6px;
+            cursor:pointer;
+            width:100%;
+            font-weight:bold;
+        }
+
+        button:disabled {
+            opacity:.6;
+            cursor:not-allowed;
+        }
+
+        /* ==============================
+           NEWS LIST
+        ============================== */
+
+        .news-item {
+            border-bottom:1px solid #eee;
+            padding:18px 0;
+            display:flex;
+            gap:15px;
+            align-items:flex-start;
+        }
+
+        .news-item img {
+            width:60px;
+            height:60px;
+            object-fit:cover;
+            border-radius:4px;
+        }
+
+        .badge {
+            font-size:10px;
+            padding:2px 6px;
+            border-radius:10px;
+            background:#e0e0e0;
+            margin-left:5px;
+            color:#333;
+        }
+
+        .delete-btn {
+            background:var(--red);
+            width:auto;
+            padding:5px 15px;
+        }
+
+        @media(max-width:600px) {
+            .format-grid {
+                grid-template-columns:1fr;
+            }
+
+            .news-item {
+                gap:8px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-<header>Flexi Admin Panel</header>
+<header>
+    Flexi Admin Panel
+</header>
 
 <div class="container">
+
+    <!-- ==============================
+         ARTICLE FORM
+    ============================== -->
+
     <div class="card">
+
         <h3>📰 Publish New Article</h3>
-<p style="
-margin-top:-8px;
-font-size:13px;
-color:#666;
-">
-Fill in the article details below. SEO fields can be edited manually or generated automatically.
-</p>
-        
-       <label>News Title</label>
-<input
-    type="text"
-    id="title"
-    placeholder="News Title"
-    oninput="generateSEO()"
->
 
-<label>SEO Title</label>
-<input
-    type="text"
-    id="seoTitle"
-    placeholder="Google Search Title"
->
+        <p style="
+            margin-top:-8px;
+            font-size:13px;
+            color:#666;
+        ">
+            Fill in the article details below. You can format the article using simple signs and insert tables anywhere in the content.
+        </p>
 
-<label>Meta Description</label>
-<textarea
-    id="metaDescription"
-    rows="3"
-    maxlength="160"
-    placeholder="Write a short description for Google (150–160 characters)"
-></textarea>
+        <label>News Title</label>
 
-<div style="display:flex;
-gap:10px;
-flex-wrap:wrap;">
+        <input
+            type="text"
+            id="title"
+            placeholder="News Title"
+            oninput="generateSEO()"
+        >
 
-<div style="flex:1;min-width:220px;">
+        <label>SEO Title</label>
 
-<label>Focus Keyword</label>
-<input type="text"
-id="focusKeyword"
-placeholder="Example: LAUTECH Post UTME Form 2026"></div>
+        <input
+            type="text"
+            id="seoTitle"
+            placeholder="Google Search Title"
+        >
 
-<div style="flex:1;min-width:220px;"><label>Slug</label>
+        <label>Meta Description</label>
 
-<input type="text"
-id="slug"
-placeholder="example-post-title"></div></div>
+        <textarea
+            id="metaDescription"
+            rows="3"
+            maxlength="160"
+            placeholder="Write a short description for Google (150–160 characters)"
+        ></textarea>
 
-<label>Main Content *</label>
-<textarea
-id="content"
-rows="8"
-placeholder="Write the full article here..."
-oninput="generateSEO()"
-></textarea>
+        <div style="
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        ">
 
-       <div style="
-background:#f8f9fa;
-border:1px solid #ddd;
-padding:15px;
-border-radius:8px;
-margin-bottom:20px;
-">
+            <div style="flex:1;min-width:220px;">
 
-<b style="color:#003366;">
-Google Search Preview
-</b>
+                <label>Focus Keyword</label>
 
-<div
-id="seoPreviewTitle"
-style="
-margin-top:10px;
-color:#1a0dab;
-font-size:19px;
-font-weight:bold;
-">
-Your SEO title will appear here
-</div>
+                <input
+                    type="text"
+                    id="focusKeyword"
+                    placeholder="Example: LAUTECH Post UTME Form 2026"
+                >
 
-<div
-style="
-color:#006621;
-font-size:13px;
-margin:4px 0;
-">
-https://flexieduconsult.com.ng/news/
-<span id="seoPreviewSlug">
-your-post
-</span>
-</div>
+            </div>
 
-<div
-id="seoPreviewDesc"
-style="
-font-size:14px;
-color:#555;
-">
-Your meta description will appear here...
-</div>
+            <div style="flex:1;min-width:220px;">
 
-</div>
- 
-        <div class="file-section">
-            <label style="color: var(--green);">📸 Main Content Image (Optional)</label>
-            <input type="file" id="imageFile" accept="image/*">
-            <div
-id="currentImageInfo"
-style="
-font-size:12px;
-color:#2E8B57;
-margin-top:-10px;
-margin-bottom:10px;
-">
-</div>
+                <label>Slug</label>
+
+                <input
+                    type="text"
+                    id="slug"
+                    placeholder="example-post-title"
+                >
+
+            </div>
+
         </div>
+
+
+        <!-- ==============================
+             FORMAT GUIDE
+        ============================== -->
+
+        <div class="format-guide">
+
+            <strong>✍️ Article Formatting Guide</strong>
+
+            <div class="format-grid">
+
+                <div class="format-item">
+                    <code>**Bold text**</code>
+                    → <b>Bold text</b>
+                </div>
+
+                <div class="format-item">
+                    <code>*Italic text*</code>
+                    → <i>Italic text</i>
+                </div>
+
+                <div class="format-item">
+                    <code>✳️ Sub Header</code>
+                    → Sub-header
+                </div>
+
+                <div class="format-item">
+                    <code># Main Heading</code>
+                    → Main heading
+                </div>
+
+                <div class="format-item">
+                    <code>## Sub Heading</code>
+                    → Sub-heading
+                </div>
+
+                <div class="format-item">
+                    <code>> Important Notice</code>
+                    → Notice box
+                </div>
+
+                <div class="format-item">
+                    <code>• Item</code>
+                    → Bullet point
+                </div>
+
+                <div class="format-item">
+                    <code>1. Item</code>
+                    → Numbered list
+                </div>
+
+                <div class="format-item">
+                    <code>---</code>
+                    → Divider
+                </div>
+
+                <div class="format-item">
+                    <code>[[TABLE_1]]</code>
+                    → Table position
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==============================
+             CONTENT CONTROLS
+        ============================== -->
+
+        <label>Main Content *</label>
+
+        <div class="content-controls">
+
+            <button
+                type="button"
+                class="content-btn"
+                onclick="insertFormatting('**','**')"
+            >
+                <b>B</b> Bold
+            </button>
+
+            <button
+                type="button"
+                class="content-btn"
+                onclick="insertFormatting('*','*')"
+            >
+                <i>I</i> Italic
+            </button>
+
+            <button
+                type="button"
+                class="content-btn"
+                onclick="insertLinePrefix('✳️ ')"
+            >
+                ✳️ Sub-header
+            </button>
+
+            <button
+                type="button"
+                class="content-btn"
+                onclick="insertLinePrefix('## ')"
+            >
+                H2
+            </button>
+
+            <button
+                type="button"
+                class="content-btn"
+                onclick="insertLinePrefix('> ')"
+            >
+                Notice
+            </button>
+
+            <button
+                type="button"
+                class="content-btn table"
+                onclick="prepareTableInsertion()"
+            >
+                📊 Insert Table Here
+            </button>
+
+            <button
+                type="button"
+                class="content-btn preview"
+                onclick="togglePreview()"
+            >
+                👁 Preview
+            </button>
+
+        </div>
+
+
+        <textarea
+            id="content"
+            rows="16"
+            placeholder="Write your article here...
+
+Example:
+
+The university has released an important update.
+
+✳️ Important Dates
+
+Registration will begin on **Monday, September 14, 2026**.
+
+[[TABLE_1]]
+
+Students are advised to take note of the dates above.
+
+> Candidates should ensure they complete the process before the deadline.
+
+• First requirement
+• Second requirement
+• Third requirement
+
+## Important Information
+
+More information will be released soon."
+            oninput="generateSEO(); updateArticlePreview();"
+        ></textarea>
+
+
+        <div id="articlePreview"></div>
+
+
+        <!-- ==============================
+             GOOGLE PREVIEW
+        ============================== -->
+
+        <div style="
+            background:#f8f9fa;
+            border:1px solid #ddd;
+            padding:15px;
+            border-radius:8px;
+            margin-bottom:20px;
+        ">
+
+            <b style="color:#003366;">
+                Google Search Preview
+            </b>
+
+            <div
+                id="seoPreviewTitle"
+                style="
+                    margin-top:10px;
+                    color:#1a0dab;
+                    font-size:19px;
+                    font-weight:bold;
+                "
+            >
+                Your SEO title will appear here
+            </div>
+
+            <div
+                style="
+                    color:#006621;
+                    font-size:13px;
+                    margin:4px 0;
+                "
+            >
+                https://flexieduconsult.com.ng/news/
+
+                <span id="seoPreviewSlug">
+                    your-post
+                </span>
+
+            </div>
+
+            <div
+                id="seoPreviewDesc"
+                style="
+                    font-size:14px;
+                    color:#555;
+                "
+            >
+                Your meta description will appear here...
+            </div>
+
+        </div>
+
+
+        <!-- ==============================
+             IMAGE
+        ============================== -->
+
+        <div class="file-section">
+
+            <label style="color:var(--green);">
+                📸 Main Content Image (Optional)
+            </label>
+
+            <input
+                type="file"
+                id="imageFile"
+                accept="image/*"
+            >
+
+            <div
+                id="currentImageInfo"
+                style="
+                    font-size:12px;
+                    color:#2E8B57;
+                    margin-top:-10px;
+                    margin-bottom:10px;
+                "
+            ></div>
+
+        </div>
+
+
+        <!-- ==============================
+             TABLE BUILDER
+        ============================== -->
 
         <div class="table-builder">
-            <label style="color: var(--blue);">Table Builder (Manual or CSV)</label>
-            <div class="builder-btns">
-                <button type="button" class="mini-btn" onclick="addRow()">+ Row</button>
-                <button type="button" class="mini-btn" onclick="addCol()">+ Col</button>
-                
-                <label class="mini-btn" style="background:#003366; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    📁 Upload CSV
-                    <input type="file" id="csvInput" accept=".csv, text/csv" style="display:none" onchange="handleCSV(this)">
-                </label>
-                
-                <button type="button" class="mini-btn" style="background:#b22222" onclick="resetTable()">Reset</button>
+
+            <div class="table-builder-title">
+                📊 Table Builder
             </div>
+
+            <div class="table-builder-help">
+                Build your table manually or upload a CSV file.
+                When ready, place the cursor in the article and click
+                <b>Insert Current Table Here</b>.
+            </div>
+
+            <div class="builder-btns">
+
+                <button
+                    type="button"
+                    class="mini-btn"
+                    onclick="addRow()"
+                >
+                    + Row
+                </button>
+
+                <button
+                    type="button"
+                    class="mini-btn"
+                    onclick="addCol()"
+                >
+                    + Col
+                </button>
+
+                <label
+                    class="mini-btn"
+                    style="
+                        background:#003366;
+                        cursor:pointer;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                    "
+                >
+                    📁 Upload CSV
+
+                    <input
+                        type="file"
+                        id="csvInput"
+                        accept=".csv,text/csv"
+                        style="display:none"
+                        onchange="handleCSV(this)"
+                    >
+                </label>
+
+                <button
+                    type="button"
+                    class="mini-btn"
+                    style="background:#b22222"
+                    onclick="resetTable()"
+                >
+                    Reset
+                </button>
+
+            </div>
+
 
             <div class="builder-grid">
+
                 <table id="manual-table">
+
                     <thead>
+
                         <tr id="table-head">
-                            <th><input type="text" placeholder="Header 1"></th>
+
+                            <th>
+                                <input
+                                    type="text"
+                                    placeholder="Header 1"
+                                >
+                            </th>
+
                         </tr>
+
                     </thead>
+
                     <tbody id="table-body">
+
                         <tr>
-                            <td><input type="text" placeholder="Data"></td>
+
+                            <td>
+                                <input
+                                    type="text"
+                                    placeholder="Data"
+                                >
+                            </td>
+
                         </tr>
+
                     </tbody>
+
                 </table>
+
             </div>
+
+
+            <button
+                type="button"
+                class="insert-table-btn"
+                onclick="insertCurrentTable()"
+            >
+                📍 Insert Current Table Here
+            </button>
+
+            <div
+                id="tableStatus"
+                class="table-status"
+            ></div>
+
         </div>
+
+
+        <!-- ==============================
+             PDF
+        ============================== -->
 
         <div class="pdf-group">
-            <label style="color: var(--blue); margin-bottom: 10px; font-size: 14px;">📄 PDF Attachment Details</label>
-            <label>PDF File (Optional)</label>
-            <input type="file" id="pdfFile" accept="application/pdf">
+
+            <label style="
+                color:var(--blue);
+                margin-bottom:10px;
+                font-size:14px;
+            ">
+                📄 PDF Attachment Details
+            </label>
+
+            <label>
+                PDF File (Optional)
+            </label>
+
+            <input
+                type="file"
+                id="pdfFile"
+                accept="application/pdf"
+            >
+
             <div
-id="currentPdfInfo"
-style="
-font-size:12px;
-color:#2E8B57;
-margin-top:-10px;
-margin-bottom:10px;
-">
-</div>
-            <label>PDF Cover/Thumbnail Image (Optional)</label>
-            <input type="file" id="pdfThumbFile" accept="image/*">
+                id="currentPdfInfo"
+                style="
+                    font-size:12px;
+                    color:#2E8B57;
+                    margin-top:-10px;
+                    margin-bottom:10px;
+                "
+            ></div>
+
+            <label>
+                PDF Cover/Thumbnail Image (Optional)
+            </label>
+
+            <input
+                type="file"
+                id="pdfThumbFile"
+                accept="image/*"
+            >
+
         </div>
 
-<div style="display:flex; gap:10px;margin-top:20px;">
-<button id="publishBtn" onclick="addNews()" style="flex:1;" >🚀 Publish Article</button>
 
-<button
-id="cancelEditBtn"
-type="button"
-onclick="cancelEdit()"
-style="
-display:none;
-flex:1;
-background:#666;
-"
->Cancel Edit</button>
+        <!-- ==============================
+             PUBLISH
+        ============================== -->
 
-</div>
+        <div style="
+            display:flex;
+            gap:10px;
+            margin-top:20px;
+        ">
+
+            <button
+                id="publishBtn"
+                onclick="addNews()"
+                style="flex:1;"
+            >
+                🚀 Publish Article
+            </button>
+
+            <button
+                id="cancelEditBtn"
+                type="button"
+                onclick="cancelEdit()"
+                style="
+                    display:none;
+                    flex:1;
+                    background:#666;
+                "
+            >
+                Cancel Edit
+            </button>
+
+        </div>
+
     </div>
+
+
+    <!-- ==============================
+         RECENT UPDATES
+    ============================== -->
 
     <div class="card">
-        <h3>Recent Updates</h3>
-        <div id="newsList">Loading...</div>
+
+        <h3>
+            Recent Updates
+        </h3>
+
+        <div id="newsList">
+            Loading...
+        </div>
+
     </div>
+
 </div>
+
+
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, getDoc, deleteDoc, updateDoc, doc, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    getDoc,
+    deleteDoc,
+    updateDoc,
+    doc,
+    serverTimestamp,
+    query,
+    orderBy,
+    where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+
+/* =========================================
+   FIREBASE
+========================================= */
 
 const firebaseConfig = {
-    apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
-    authDomain: "waec2026jamb2027.firebaseapp.com",
-    projectId: "waec2026jamb2027",
+
+    apiKey:
+        "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+
+    authDomain:
+        "waec2026jamb2027.firebaseapp.com",
+
+    projectId:
+        "waec2026jamb2027"
+
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getFirestore(app);
+
+
+/* =========================================
+   CLOUDINARY
+========================================= */
+
 const CLOUD_NAME = "dwmbgd9jy";
+
 const UPLOAD_PRESET = "my_preset_123";
 
+
+/* =========================================
+   STATE
+========================================= */
+
 let editingPostId = null;
+
 let existingImageUrl = "";
+
 let existingPdfUrl = "";
+
 let existingPdfThumbUrl = "";
 
-// --- EXPOSE FUNCTIONS TO WINDOW ---
+
+/*
+   Stores tables belonging to the current
+   article.
+
+   Example:
+
+   {
+      "TABLE_1": "<table>...</table>",
+      "TABLE_2": "<table>...</table>"
+   }
+*/
+
+let articleTables = {};
+
+
+/*
+   Next table number.
+*/
+
+let nextTableNumber = 1;
+
+
+/* =========================================
+   EXPOSE FUNCTIONS
+========================================= */
+
 window.addNews = addNews;
+
 window.editNews = editNews;
+
 window.deleteNews = deleteNews;
+
 window.cancelEdit = cancelEdit;
+
 window.addRow = addRow;
+
 window.addCol = addCol;
+
 window.handleCSV = handleCSV;
+
 window.resetTable = resetTable;
+
 window.generateSEO = generateSEO;
+
 window.updateSEOPreview = updateSEOPreview;
 
-// --- INITIALIZATION ---
-document.addEventListener("DOMContentLoaded", () => {
-    loadNews();
-    generateSEO();
-    ["seoTitle", "metaDescription", "slug"].forEach(id => {
-        document.getElementById(id).addEventListener("input", updateSEOPreview);
-    });
-});
+window.insertFormatting = insertFormatting;
 
-// --- CORE FUNCTIONS ---
-async function generateUniqueSlug(slug) {
-    let finalSlug = slug;
-    let count = 1;
-    while (true) {
-        const q = query(collection(db, "news"), where("slug", "==", finalSlug));
-        const snap = await getDocs(q);
-        if (snap.empty || (editingPostId && snap.docs[0].id === editingPostId)) break;
-        finalSlug = `${slug}-${count}`;
-        count++;
+window.insertLinePrefix = insertLinePrefix;
+
+window.prepareTableInsertion = prepareTableInsertion;
+
+window.insertCurrentTable = insertCurrentTable;
+
+window.togglePreview = togglePreview;
+
+window.updateArticlePreview = updateArticlePreview;
+
+
+/* =========================================
+   INITIALIZATION
+========================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        loadNews();
+
+        generateSEO();
+
+        updateArticlePreview();
+
+        [
+            "seoTitle",
+            "metaDescription",
+            "slug"
+        ].forEach(id => {
+
+            document
+                .getElementById(id)
+                .addEventListener(
+                    "input",
+                    updateSEOPreview
+                );
+
+        });
+
     }
+);
+
+
+/* =========================================
+   SLUG
+========================================= */
+
+async function generateUniqueSlug(slug) {
+
+    let finalSlug = slug;
+
+    let count = 1;
+
+    while (true) {
+
+        const q = query(
+            collection(db, "news"),
+            where("slug", "==", finalSlug)
+        );
+
+        const snap = await getDocs(q);
+
+        if (
+            snap.empty ||
+            (
+                editingPostId &&
+                snap.docs[0].id === editingPostId
+            )
+        ) {
+
+            break;
+
+        }
+
+        finalSlug =
+            `${slug}-${count}`;
+
+        count++;
+
+    }
+
     return finalSlug;
 }
 
+
+/* =========================================
+   CLOUDINARY
+========================================= */
+
 async function uploadToCloudinary(file) {
+
     if (!file) return "";
+
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", UPLOAD_PRESET);
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, { method: "POST", body: formData });
+
+    formData.append(
+        "file",
+        file
+    );
+
+    formData.append(
+        "upload_preset",
+        UPLOAD_PRESET
+    );
+
+    const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`,
+        {
+            method:"POST",
+            body:formData
+        }
+    );
+
     const data = await res.json();
+
+    if (!res.ok || !data.secure_url) {
+
+        throw new Error(
+            data.error?.message ||
+            "Cloudinary upload failed"
+        );
+
+    }
+
     return data.secure_url;
 }
 
+
+/* =========================================
+   HTML ESCAPE
+========================================= */
+
+function escapeHTML(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================
+   GENERATE TABLE HTML
+========================================= */
+
 function generateTableHTML() {
-    const headInputs = document.querySelectorAll('#table-head input');
-    const bodyRows = document.querySelectorAll('#table-body tr');
-    
-    // Check if the table is just the default empty state
-    const isHeaderEmpty = headInputs.length === 1 && headInputs[0].value.trim() === "";
-    const isRowEmpty = bodyRows.length === 1 && bodyRows[0].querySelector('input').value.trim() === "";
-    
-    // If table is empty, return null so it doesn't get saved
-    if (isHeaderEmpty && isRowEmpty) return null;
 
-    let html = "<table><thead><tr>";
-    headInputs.forEach(i => html += `<th>${i.value}</th>`);
-    html += "</tr></thead><tbody>";
-    bodyRows.forEach(row => {
-        html += "<tr>";
-        row.querySelectorAll('input').forEach(i => html += `<td>${i.value}</td>`);
-        html += "</tr>";
-    });
-    return html + "</tbody></table>";
-}
+    const headInputs =
+        document.querySelectorAll(
+            "#table-head input"
+        );
 
-async function addNews() {
-    const title = document.getElementById("title").value.trim();
-    const content = document.getElementById("content").value.trim();
-    const btn = document.getElementById("publishBtn");
-    
-    if (!title || !content) return alert("Please fill in Title and Content.");
+    const bodyRows =
+        document.querySelectorAll(
+            "#table-body tr"
+        );
 
-    btn.disabled = true;
-    btn.innerText = "Processing...";
 
-    try {
-        const [img, pdf, thumb] = await Promise.all([
-            uploadToCloudinary(document.getElementById("imageFile").files[0]),
-            uploadToCloudinary(document.getElementById("pdfFile").files[0]),
-            uploadToCloudinary(document.getElementById("pdfThumbFile").files[0])
-        ]);
+    const headerValues =
+        Array.from(headInputs)
+            .map(input =>
+                input.value.trim()
+            );
 
-        let slug = document.getElementById("slug").value.trim();
-        if (!slug) slug = title.toLowerCase().replace(/[^a-z0-9]/g, "-");
-        slug = await generateUniqueSlug(slug);
+    const bodyValues =
+        Array.from(bodyRows)
+            .map(row =>
+                Array.from(
+                    row.querySelectorAll("input")
+                ).map(input =>
+                    input.value.trim()
+                )
+            );
 
-        // Build the data object
-        const postData = {
-            title,
-            seoTitle: document.getElementById("seoTitle").value,
-            metaDescription: document.getElementById("metaDescription").value,
-            focusKeyword: document.getElementById("focusKeyword").value,
-            slug,
-            content,
-            imageUrl: img || existingImageUrl,
-            pdfUrl: pdf || existingPdfUrl,
-            pdfThumbUrl: thumb || existingPdfThumbUrl,
-            timestamp: serverTimestamp()
-        };
 
-        // Only add tableData to the object if it exists (is not null)
-        const tableData = generateTableHTML();
-        if (tableData) {
-            postData.tableData = tableData;
-        }
+    const hasContent =
+        headerValues.some(Boolean) ||
+        bodyValues.some(row =>
+            row.some(Boolean)
+        );
 
-        if (editingPostId) await updateDoc(doc(db, "news", editingPostId), postData);
-        else await addDoc(collection(db, "news"), postData);
 
-        alert("Article saved successfully!");
-        location.reload();
-    } catch (e) {
-        console.error(e);
-        alert("Failed to publish.");
-        btn.disabled = false;
-        btn.innerText = "🚀 Publish Article";
+    if (!hasContent) {
+
+        return null;
+
     }
+
+
+    let html =
+        "<table><thead><tr>";
+
+
+    headerValues.forEach(
+        value => {
+
+            html +=
+                `<th>${escapeHTML(value)}</th>`;
+
+        }
+    );
+
+
+    html +=
+        "</tr></thead><tbody>";
+
+
+    bodyValues.forEach(
+        row => {
+
+            html += "<tr>";
+
+            row.forEach(
+                value => {
+
+                    html +=
+                        `<td>${escapeHTML(value)}</td>`;
+
+                }
+            );
+
+            html += "</tr>";
+
+        }
+    );
+
+
+    html +=
+        "</tbody></table>";
+
+
+    return html;
 }
 
-// --- UI HELPERS ---
-function generateSEO() {
-    const title = document.getElementById("title").value.trim();
-    const content = document.getElementById("content").value.trim();
-    const seoTitle = document.getElementById("seoTitle");
-    const metaDesc = document.getElementById("metaDescription");
-    const slug = document.getElementById("slug");
-    const kw = document.getElementById("focusKeyword");
 
-    if (!seoTitle.value) seoTitle.value = title;
-    if (!kw.value) kw.value = title;
-    if (!slug.value) slug.value = title.toLowerCase().replace(/[^a-z0-9]/g, "-");
-    if (!metaDesc.value) metaDesc.value = content.substring(0, 157);
-    updateSEOPreview();
+/* =========================================
+   INSERT TEXT AT CURSOR
+========================================= */
+
+function insertAtCursor(text) {
+
+    const textarea =
+        document.getElementById("content");
+
+    const start =
+        textarea.selectionStart;
+
+    const end =
+        textarea.selectionEnd;
+
+    const current =
+        textarea.value;
+
+
+    textarea.value =
+        current.substring(0, start) +
+        text +
+        current.substring(end);
+
+
+    const newPosition =
+        start + text.length;
+
+
+    textarea.focus();
+
+    textarea.setSelectionRange(
+        newPosition,
+        newPosition
+    );
+
+
+    generateSEO();
+
+    updateArticlePreview();
+
 }
 
-function updateSEOPreview() {
-    document.getElementById("seoPreviewTitle").innerText = document.getElementById("seoTitle").value || "Your Title";
-    document.getElementById("seoPreviewDesc").innerText = document.getElementById("metaDescription").value || "Your description...";
-    document.getElementById("seoPreviewSlug").innerText = document.getElementById("slug").value || "your-slug";
+
+/* =========================================
+   FORMAT WRAPPER
+========================================= */
+
+function insertFormatting(
+    before,
+    after
+) {
+
+    const textarea =
+        document.getElementById("content");
+
+    const start =
+        textarea.selectionStart;
+
+    const end =
+        textarea.selectionEnd;
+
+    const selected =
+        textarea.value.substring(
+            start,
+            end
+        );
+
+
+    const replacement =
+        before +
+        (
+            selected ||
+            "text"
+        ) +
+        after;
+
+
+    textarea.setRangeText(
+        replacement,
+        start,
+        end,
+        "end"
+    );
+
+
+    textarea.focus();
+
+    generateSEO();
+
+    updateArticlePreview();
+
 }
+
+
+/* =========================================
+   LINE PREFIX
+========================================= */
+
+function insertLinePrefix(prefix) {
+
+    const textarea =
+        document.getElementById("content");
+
+    const start =
+        textarea.selectionStart;
+
+
+    const before =
+        textarea.value.substring(
+            0,
+            start
+        );
+
+    const lineStart =
+        before.lastIndexOf("\n") + 1;
+
+
+    textarea.value =
+        textarea.value.substring(
+            0,
+            lineStart
+        ) +
+        prefix +
+        textarea.value.substring(
+            lineStart
+        );
+
+
+    textarea.focus();
+
+    textarea.setSelectionRange(
+        start + prefix.length,
+        start + prefix.length
+    );
+
+
+    generateSEO();
+
+    updateArticlePreview();
+
+}
+
+
+/* =========================================
+   PREPARE TABLE INSERTION
+========================================= */
+
+function prepareTableInsertion() {
+
+    const textarea =
+        document.getElementById("content");
+
+
+    /*
+       We don't insert the marker yet.
+
+       We simply tell the administrator
+       that the cursor position is the
+       intended table location.
+    */
+
+    textarea.focus();
+
+    document
+        .getElementById("tableStatus")
+        .innerText =
+        "📍 Table position selected. Build your table below, then click “Insert Current Table Here”.";
+
+}
+
+
+/* =========================================
+   INSERT CURRENT TABLE
+========================================= */
+
+function insertCurrentTable() {
+
+    const tableHTML =
+        generateTableHTML();
+
+
+    if (!tableHTML) {
+
+        alert(
+            "Please enter some table data first."
+        );
+
+        return;
+
+    }
+
+
+    const tableId =
+        `TABLE_${nextTableNumber}`;
+
+
+    articleTables[tableId] =
+        tableHTML;
+
+
+    nextTableNumber++;
+
+
+    const textarea =
+        document.getElementById("content");
+
+
+    /*
+       Add spacing around marker so it
+       behaves like its own article block.
+    */
+
+    const marker =
+        `\n\n[[${tableId}]]\n\n`;
+
+
+    const start =
+        textarea.selectionStart;
+
+    const end =
+        textarea.selectionEnd;
+
+    const current =
+        textarea.value;
+
+
+    textarea.value =
+        current.substring(0, start) +
+        marker +
+        current.substring(end);
+
+
+    const newPosition =
+        start + marker.length;
+
+
+    textarea.focus();
+
+    textarea.setSelectionRange(
+        newPosition,
+        newPosition
+    );
+
+
+    document
+        .getElementById("tableStatus")
+        .innerText =
+        `✅ ${tableId} inserted at the cursor position.`;
+
+
+    resetTable(false);
+
+
+    generateSEO();
+
+    updateArticlePreview();
+
+}
+
+
+/* =========================================
+   TABLE CSV
+========================================= */
 
 function handleCSV(input) {
-    const reader = new FileReader();
+
+    const file =
+        input.files?.[0];
+
+    if (!file) return;
+
+
+    const reader =
+        new FileReader();
+
+
     reader.onload = (e) => {
-        const rows = e.target.result.split(/\r?\n/).filter(x => x.trim());
-        const headRow = document.getElementById('table-head');
-        const body = document.getElementById('table-body');
-        const cols = rows[0].split(rows[0].includes(';') ? ';' : ',');
-        headRow.innerHTML = cols.map(c => `<th><input type="text" value="${c.trim()}"></th>`).join('');
-        body.innerHTML = rows.slice(1).map(r => `<tr>${r.split(rows[0].includes(';') ? ';' : ',').map(c => `<td><input type="text" value="${c.trim()}"></td>`).join('')}</tr>`).join('');
+
+        const rows =
+            e.target.result
+                .split(/\r?\n/)
+                .filter(
+                    row => row.trim()
+                );
+
+
+        if (!rows.length) {
+
+            alert(
+                "CSV file is empty."
+            );
+
+            return;
+
+        }
+
+
+        const delimiter =
+            rows[0].includes(";")
+                ? ";"
+                : ",";
+
+
+        const headRow =
+            document.getElementById(
+                "table-head"
+            );
+
+        const body =
+            document.getElementById(
+                "table-body"
+            );
+
+
+        const headers =
+            rows[0]
+                .split(delimiter);
+
+
+        headRow.innerHTML =
+            headers
+                .map(
+                    value =>
+                        `<th>
+                            <input
+                                type="text"
+                                value="${escapeAttribute(value.trim())}"
+                            >
+                        </th>`
+                )
+                .join("");
+
+
+        body.innerHTML =
+            rows
+                .slice(1)
+                .map(
+                    row => {
+
+                        const cells =
+                            row.split(delimiter);
+
+                        return `
+                            <tr>
+                                ${
+                                    cells
+                                        .map(
+                                            value =>
+                                                `<td>
+                                                    <input
+                                                        type="text"
+                                                        value="${escapeAttribute(value.trim())}"
+                                                    >
+                                                </td>`
+                                        )
+                                        .join("")
+                                }
+                            </tr>
+                        `;
+
+                    }
+                )
+                .join("");
+
+
     };
-    reader.readAsText(input.files[0]);
+
+
+    reader.readAsText(file);
+
 }
+
+
+/* =========================================
+   ATTRIBUTE ESCAPE
+========================================= */
+
+function escapeAttribute(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+}
+
+
+/* =========================================
+   ADD ROW
+========================================= */
 
 function addRow() {
-    const body = document.getElementById('table-body');
-    const cols = document.getElementById('table-head').children.length;
-    body.innerHTML += `<tr>${'<td><input type="text"></td>'.repeat(cols)}</tr>`;
+
+    const body =
+        document.getElementById(
+            "table-body"
+        );
+
+    const cols =
+        document
+            .getElementById(
+                "table-head"
+            )
+            .children.length;
+
+
+    body.insertAdjacentHTML(
+        "beforeend",
+        `<tr>${
+            "<td><input type=\"text\"></td>"
+                .repeat(cols)
+        }</tr>`
+    );
+
 }
+
+
+/* =========================================
+   ADD COLUMN
+========================================= */
 
 function addCol() {
-    document.getElementById('table-head').innerHTML += `<th><input type="text"></th>`;
-    document.querySelectorAll('#table-body tr').forEach(r => r.innerHTML += `<td><input type="text"></td>`);
+
+    document
+        .getElementById(
+            "table-head"
+        )
+        .insertAdjacentHTML(
+            "beforeend",
+            `<th>
+                <input type="text">
+            </th>`
+        );
+
+
+    document
+        .querySelectorAll(
+            "#table-body tr"
+        )
+        .forEach(row => {
+
+            row.insertAdjacentHTML(
+                "beforeend",
+                `<td>
+                    <input type="text">
+                </td>`
+            );
+
+        });
+
 }
 
-function resetTable() {
-    if(!confirm("Clear table?")) return;
-    document.getElementById('table-head').innerHTML = `<th><input type="text" placeholder="Header 1"></th>`;
-    document.getElementById('table-body').innerHTML = `<tr><td><input type="text" placeholder="Data"></td></tr>`;
-}
 
-async function editNews(id) {
-    const snap = await getDoc(doc(db, "news", id));
-    if (!snap.exists()) return alert("Not found");
-    const data = snap.data();
-    editingPostId = id;
-    existingImageUrl = data.imageUrl || "";
-    existingPdfUrl = data.pdfUrl || "";
-    existingPdfThumbUrl = data.pdfThumbUrl || "";
-    document.getElementById("title").value = data.title;
-    document.getElementById("seoTitle").value = data.seoTitle;
-    document.getElementById("metaDescription").value = data.metaDescription;
-    document.getElementById("focusKeyword").value = data.focusKeyword;
-    document.getElementById("slug").value = data.slug;
-    document.getElementById("content").value = data.content;
-    document.getElementById("publishBtn").innerText = "💾 Update Article";
-    document.getElementById("cancelEditBtn").style.display = "block";
-    updateSEOPreview();
-}
+/* =========================================
+   RESET TABLE
+========================================= */
 
-function cancelEdit() {
-    location.reload();
-}
+function resetTable(confirmReset = true) {
 
-async function deleteNews(id) {
-    if (!confirm("Delete?")) return;
-    await deleteDoc(doc(db, "news", id));
-    loadNews();
-}
+    if (
+        confirmReset &&
+        !confirm("Clear table?")
+    ) {
 
-async function loadNews() {
-    const snap = await getDocs(query(collection(db, "news"), orderBy("timestamp", "desc")));
-    const list = document.getElementById("newsList");
-    list.innerHTML = "";
-    
-    if (snap.empty) {
-        list.innerHTML = `<div style="text-align:center; color:#777; padding:30px;">No published articles yet.</div>`;
         return;
+
     }
 
-    snap.forEach(docSnap => {
-        const data = docSnap.data();
-        const id = docSnap.id;
-        const image = data.imageUrl || data.pdfThumbUrl || "https://via.placeholder.com/80";
-        const date = data.timestamp?.toDate ? data.timestamp.toDate().toLocaleString() : "Just now";
-        
-        const div = document.createElement("div");
-        div.className = "news-item";
-        div.innerHTML = `
-            <img src="${image}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
-            <div style="flex:1;">
-                <div style="font-size:14px; font-weight:bold; color:#003366;">${data.title}</div>
-                <div style="font-size:11px; color:#666; margin:4px 0;">📅 ${date}</div>
-                <div style="font-size:11px; color:#2E8B57;">🔑 ${data.focusKeyword || "-"}</div>
-                <div style="margin-top:5px;">
-                    ${data.pdfUrl ? `<span class="badge">PDF</span>` : ""}
-                    ${data.tableData ? `<span class="badge">TABLE</span>` : ""}
-                    ${data.imageUrl ? `<span class="badge">IMAGE</span>` : ""}
-                </div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:5px;">
-                <button style="background:#003366; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer;" onclick="editNews('${id}')">Edit</button>
-                <button class="delete-btn" style="background:#b22222; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer;" onclick="deleteNews('${id}')">Delete</button>
-            </div>
-        `;
-        list.appendChild(div);
-    });
+
+    document
+        .getElementById(
+            "table-head"
+        )
+        .innerHTML =
+        `<th>
+            <input
+                type="text"
+                placeholder="Header 1"
+            >
+        </th>`;
+
+
+    document
+        .getElementById(
+            "table-body"
+        )
+        .innerHTML =
+        `<tr>
+            <td>
+                <input
+                    type="text"
+                    placeholder="Data"
+                >
+            </td>
+        </tr>`;
+
+
+    if (confirmReset) {
+
+        document
+            .getElementById(
+                "tableStatus"
+            )
+            .innerText = "";
+
+    }
+
 }
 
-            </script>
-    </body>
-    </html>
+
+/* =========================================
+   SAVE ARTICLE
+========================================= */
+
+async function addNews() {
+
+    const title =
+        document
+            .getElementById("title")
+            .value
+            .trim();
+
+
+    const content =
+        document
+            .getElementById("content")
+            .value
+            .trim();
+
+
+    const btn =
+        document.getElementById(
+            "publishBtn"
+        );
+
+
+    if (!title || !content) {
+
+        alert(
+            "Please fill in Title and Content."
+        );
+
+        return;
+
+    }
+
+
+    btn.disabled = true;
+
+    btn.innerText =
+        "Processing...";
+
+
+    try {
+
+        /*
+           Upload files.
+        */
+
+        const [
+            img,
+            pdf,
+            thumb
+        ] = await Promise.all([
+
+            uploadToCloudinary(
+                document
+                    .getElementById(
+                        "imageFile"
+                    )
+                    .files[0]
+            ),
+
+            uploadToCloudinary(
+                document
+                    .getElementById(
+                        "pdfFile"
+                    )
+                    .files[0]
+            ),
+
+            uploadToCloudinary(
+                document
+                    .getElementById(
+                        "pdfThumbFile"
+                    )
+                    .files[0]
+            )
+
+        ]);
+
+
+        let slug =
+            document
+                .getElementById("slug")
+                .value
+                .trim();
+
+
+        if (!slug) {
+
+            slug =
+                title
+                    .toLowerCase()
+                    .replace(
+                        /[^a-z0-9]+/g,
+                        "-"
+                    )
+                    .replace(
+                        /^-+|-+$/g,
+                        ""
+                    );
+
+        }
+
+
+        slug =
+            await generateUniqueSlug(
+                slug
+            );
+
+
+        /*
+           Main article object.
+        */
+
+        const postData = {
+
+            title,
+
+            seoTitle:
+                document
+                    .getElementById(
+                        "seoTitle"
+                    )
+                    .value,
+
+            metaDescription:
+                document
+                    .getElementById(
+                        "metaDescription"
+                    )
+                    .value,
+
+            focusKeyword:
+                document
+                    .getElementById(
+                        "focusKeyword"
+                    )
+                    .value,
+
+            slug,
+
+            content,
+
+            imageUrl:
+                img ||
+                existingImageUrl,
+
+            pdfUrl:
+                pdf ||
+                existingPdfUrl,
+
+            pdfThumbUrl:
+                thumb ||
+                existingPdfThumbUrl,
+
+            timestamp:
+                serverTimestamp()
+
+        };
+
+
+        /*
+           Convert articleTables into
+           a single backward-compatible
+           tableData string.
+
+           Example:
+
+           <!--FLEXI_TABLE:TABLE_1-->
+           <table>...</table>
+           <!--END_FLEXI_TABLE-->
+
+           <!--FLEXI_TABLE:TABLE_2-->
+           ...
+        */
+
+        const tableBlocks =
+            Object.entries(
+                articleTables
+            )
+            .map(
+                ([id, html]) =>
+                    `<!--FLEXI_TABLE:${id}-->${html}<!--END_FLEXI_TABLE-->`
+            )
+            .join("\n");
+
+
+        /*
+           If there are new tables,
+           save them.
+
+           If editing an old article
+           that has an existing table but
+           no new table was created, keep
+           the existing table field untouched
+           by not replacing it.
+        */
+
+        if (tableBlocks) {
+
+            postData.tableData =
+                tableBlocks;
+
+        }
+
+
+        /*
+           Save.
+        */
+
+        if (editingPostId) {
+
+            await updateDoc(
+                doc(
+                    db,
+                    "news",
+                    editingPostId
+                ),
+                postData
+            );
+
+        } else {
+
+            await addDoc(
+                collection(
+                    db,
+                    "news"
+                ),
+                postData
+            );
+
+        }
+
+
+        alert(
+            "Article saved successfully!"
+        );
+
+
+        location.reload();
+
+
+    } catch (e) {
+
+        console.error(e);
+
+        alert(
+            "Failed to publish: " +
+            e.message
+        );
+
+
+        btn.disabled = false;
+
+        btn.innerText =
+            editingPostId
+                ? "💾 Update Article"
+                : "🚀 Publish Article";
+
+    }
+
+}
+
+
+/* =========================================
+   SEO
+========================================= */
+
+function generateSEO() {
+
+    const title =
+        document
+            .getElementById("title")
+            .value
+            .trim();
+
+
+    const content =
+        document
+            .getElementById("content")
+            .value
+            .trim();
+
+
+    const seoTitle =
+        document.getElementById(
+            "seoTitle"
+        );
+
+
+    const metaDesc =
+        document.getElementById(
+            "metaDescription"
+        );
+
+
+    const slug =
+        document.getElementById(
+            "slug"
+        );
+
+
+    const kw =
+        document.getElementById(
+            "focusKeyword"
+        );
+
+
+    if (!seoTitle.value) {
+
+        seoTitle.value =
+            title;
+
+    }
+
+
+    if (!kw.value) {
+
+        kw.value =
+            title;
+
+    }
+
+
+    if (!slug.value) {
+
+        slug.value =
+            title
+                .toLowerCase()
+                .replace(
+                    /[^a-z0-9]+/g,
+                    "-"
+                )
+                .replace(
+                    /^-+|-+$/g,
+                    ""
+                );
+
+    }
+
+
+    if (!metaDesc.value) {
+
+        /*
+           Remove table markers and
+           formatting signs from SEO
+           description.
+        */
+
+        const clean =
+            content
+                .replace(
+                    /\[\[TABLE_\d+\]\]/g,
+                    ""
+                )
+                .replace(
+                    /[*✳️#>]/g,
+                    ""
+                )
+                .trim();
+
+
+        metaDesc.value =
+            clean.substring(
+                0,
+                157
+            );
+
+    }
+
+
+    updateSEOPreview();
+
+}
+
+
+/* =========================================
+   SEO PREVIEW
+========================================= */
+
+function updateSEOPreview() {
+
+    document
+        .getElementById(
+            "seoPreviewTitle"
+        )
+        .innerText =
+        document
+            .getElementById(
+                "seoTitle"
+            )
+            .value ||
+        "Your Title";
+
+
+    document
+        .getElementById(
+            "seoPreviewDesc"
+        )
+        .innerText =
+        document
+            .getElementById(
+                "metaDescription"
+            )
+            .value ||
+        "Your description...";
+
+
+    document
+        .getElementById(
+            "seoPreviewSlug"
+        )
+        .innerText =
+        document
+            .getElementById(
+                "slug"
+            )
+            .value ||
+        "your-slug";
+
+}
+
+
+/* =========================================
+   ARTICLE PARSER
+========================================= */
+
+function parseArticleContent(
+    rawContent
+) {
+
+    if (!rawContent) return "";
+
+
+    const escaped =
+        escapeHTML(
+            rawContent
+        );
+
+
+    const lines =
+        escaped.split("\n");
+
+
+    let html = "";
+
+    let inUL = false;
+
+    let inOL = false;
+
+
+    function closeLists() {
+
+        if (inUL) {
+
+            html += "</ul>";
+
+            inUL = false;
+
+        }
+
+        if (inOL) {
+
+            html += "</ol>";
+
+            inOL = false;
+
+        }
+
+    }
+
+
+    function inlineFormat(text) {
+
+        /*
+           Bold
+        */
+
+        text =
+            text.replace(
+                /\*\*(.+?)\*\*/g,
+                "<strong>$1</strong>"
+            );
+
+
+        /*
+           Italic
+        */
+
+        text =
+            text.replace(
+                /(^|[^\*])\*([^*\n]+)\*(?!\*)/g,
+                "$1<em>$2</em>"
+            );
+
+
+        /*
+           Inline code
+        */
+
+        text =
+            text.replace(
+                /`([^`]+)`/g,
+                "<code>$1</code>"
+            );
+
+
+        return text;
+
+    }
+
+
+    lines.forEach(
+        line => {
+
+            const trimmed =
+                line.trim();
+
+
+            /*
+               Empty line
+            */
+
+            if (!trimmed) {
+
+                closeLists();
+
+                return;
+
+            }
+
+
+            /*
+               TABLE MARKER
+            */
+
+            const tableMatch =
+                trimmed.match(
+                    /^\[\[(TABLE_\d+)\]\]$/
+                );
+
+
+            if (tableMatch) {
+
+                closeLists();
+
+                const id =
+                    tableMatch[1];
+
+                if (
+                    articleTables[id]
+                ) {
+
+                    html +=
+                        `<div class="article-table">
+                            ${articleTables[id]}
+                        </div>`;
+
+                } else {
+
+                    html +=
+                        `<div style="
+                            padding:10px;
+                            border:1px dashed #ccc;
+                            color:#888;
+                            text-align:center;
+                        ">
+                            Table ${escapeHTML(id)}
+                        </div>`;
+
+                }
+
+                return;
+
+            }
+
+
+            /*
+               Divider
+            */
+
+            if (
+                trimmed === "---" ||
+                trimmed === "***"
+            ) {
+
+                closeLists();
+
+                html += "<hr>";
+
+                return;
+
+            }
+
+
+            /*
+               ✳️ SUB HEADER
+            */
+
+            if (
+                trimmed.startsWith("✳️ ")
+            ) {
+
+                closeLists();
+
+                html +=
+                    `<h2>
+                        ${inlineFormat(
+                            trimmed.substring(3)
+                        )}
+                    </h2>`;
+
+                return;
+
+            }
+
+
+            /*
+               # Heading
+            */
+
+            if (
+                trimmed.startsWith("# ")
+            ) {
+
+                closeLists();
+
+                html +=
+                    `<h2>
+                        ${inlineFormat(
+                            trimmed.substring(2)
+                        )}
+                    </h2>`;
+
+                return;
+
+            }
+
+
+            /*
+               ## Sub heading
+            */
+
+            if (
+                trimmed.startsWith("## ")
+            ) {
+
+                closeLists();
+
+                html +=
+                    `<h3>
+                        ${inlineFormat(
+                            trimmed.substring(3)
+                        )}
+                    </h3>`;
+
+                return;
+
+            }
+
+
+            /*
+               ### Smaller heading
+            */
+
+            if (
+                trimmed.startsWith("### ")
+            ) {
+
+                closeLists();
+
+                html +=
+                    `<h4>
+                        ${inlineFormat(
+                            trimmed.substring(4)
+                        )}
+                    </h4>`;
+
+                return;
+
+            }
+
+
+            /*
+               Blockquote
+            */
+
+            if (
+                trimmed.startsWith("&gt; ")
+            ) {
+
+                closeLists();
+
+                html +=
+                    `<blockquote>
+                        ${inlineFormat(
+                            trimmed.substring(5)
+                        )}
+                    </blockquote>`;
+
+                return;
+
+            }
+
+
+            /*
+               Bullet
+            */
+
+            if (
+                trimmed.startsWith("• ")
+            ) {
+
+                if (!inUL) {
+
+                    if (inOL) {
+
+                        html += "</ol>";
+
+                        inOL = false;
+
+                    }
+
+                    html += "<ul>";
+
+                    inUL = true;
+
+                }
+
+                html +=
+                    `<li>
+                        ${inlineFormat(
+                            trimmed.substring(2)
+                        )}
+                    </li>`;
+
+                return;
+
+            }
+
+
+            /*
+               Dash bullet
+            */
+
+            if (
+                trimmed.startsWith("- ")
+            ) {
+
+                if (!inUL) {
+
+                    if (inOL) {
+
+                        html += "</ol>";
+
+                        inOL = false;
+
+                    }
+
+                    html += "<ul>";
+
+                    inUL = true;
+
+                }
+
+                html +=
+                    `<li>
+                        ${inlineFormat(
+                            trimmed.substring(2)
+                        )}
+                    </li>`;
+
+                return;
+
+            }
+
+
+            /*
+               Numbered list
+            */
+
+            const numbered =
+                trimmed.match(
+                    /^\d+\.\s+(.+)$/
+                );
+
+
+            if (numbered) {
+
+                if (!inOL) {
+
+                    if (inUL) {
+
+                        html += "</ul>";
+
+                        inUL = false;
+
+                    }
+
+                    html += "<ol>";
+
+                    inOL = true;
+
+                }
+
+                html +=
+                    `<li>
+                        ${inlineFormat(
+                            numbered[1]
+                        )}
+                    </li>`;
+
+                return;
+
+            }
+
+
+            /*
+               Normal paragraph
+            */
+
+            closeLists();
+
+            html +=
+                `<p>
+                    ${inlineFormat(
+                        trimmed
+                    )}
+                </p>`;
+
+        }
+    );
+
+
+    closeLists();
+
+
+    return html;
+
+}
+
+
+/* =========================================
+   PREVIEW
+========================================= */
+
+function updateArticlePreview() {
+
+    const preview =
+        document.getElementById(
+            "articlePreview"
+        );
+
+
+    if (
+        preview.style.display !==
+        "block"
+    ) {
+
+        return;
+
+    }
+
+
+    preview.innerHTML =
+        parseArticleContent(
+            document
+                .getElementById(
+                    "content"
+                )
+                .value
+        );
+
+}
+
+
+/* =========================================
+   TOGGLE PREVIEW
+========================================= */
+
+function togglePreview() {
+
+    const preview =
+        document.getElementById(
+            "articlePreview"
+        );
+
+
+    if (
+        preview.style.display ===
+        "block"
+    ) {
+
+        preview.style.display =
+            "none";
+
+        return;
+
+    }
+
+
+    preview.style.display =
+        "block";
+
+
+    updateArticlePreview();
+
+}
+
+
+/* =========================================
+   EDIT ARTICLE
+========================================= */
+
+async function editNews(id) {
+
+    const snap =
+        await getDoc(
+            doc(
+                db,
+                "news",
+                id
+            )
+        );
+
+
+    if (!snap.exists()) {
+
+        alert("Not found");
+
+        return;
+
+    }
+
+
+    const data =
+        snap.data();
+
+
+    editingPostId =
+        id;
+
+
+    existingImageUrl =
+        data.imageUrl ||
+        "";
+
+
+    existingPdfUrl =
+        data.pdfUrl ||
+        "";
+
+
+    existingPdfThumbUrl =
+        data.pdfThumbUrl ||
+        "";
+
+
+    /*
+       Reset table state.
+    */
+
+    articleTables = {};
+
+    nextTableNumber = 1;
+
+
+    /*
+       Load stored table blocks.
+    */
+
+    if (
+        data.tableData &&
+        typeof data.tableData ===
+            "string"
+    ) {
+
+        const regex =
+            /<!--FLEXI_TABLE:(TABLE_\d+)-->([\s\S]*?)<!--END_FLEXI_TABLE-->/g;
+
+
+        let match;
+
+
+        while (
+            (match =
+                regex.exec(
+                    data.tableData
+                )) !== null
+        ) {
+
+            articleTables[
+                match[1]
+            ] =
+                match[2];
+
+
+            const number =
+                parseInt(
+                    match[1]
+                        .replace(
+                            "TABLE_",
+                            ""
+                        ),
+                    10
+                );
+
+
+            if (
+                number >=
+                nextTableNumber
+            ) {
+
+                nextTableNumber =
+                    number + 1;
+
+            }
+
+        }
+
+    }
+
+
+    document
+        .getElementById("title")
+        .value =
+        data.title || "";
+
+
+    document
+        .getElementById("seoTitle")
+        .value =
+        data.seoTitle || "";
+
+
+    document
+        .getElementById("metaDescription")
+        .value =
+        data.metaDescription || "";
+
+
+    document
+        .getElementById("focusKeyword")
+        .value =
+        data.focusKeyword || "";
+
+
+    document
+        .getElementById("slug")
+        .value =
+        data.slug || "";
+
+
+    document
+        .getElementById("content")
+        .value =
+        data.content || "";
+
+
+    /*
+       Legacy article compatibility.
+
+       If an old article has tableData but
+       does NOT use [[TABLE_X]], we don't
+       modify its content. The public renderer
+       will continue handling its old tableData.
+    */
+
+
+    document
+        .getElementById(
+            "publishBtn"
+        )
+        .innerText =
+        "💾 Update Article";
+
+
+    document
+        .getElementById(
+            "cancelEditBtn"
+        )
+        .style.display =
+        "block";
+
+
+    document
+        .getElementById(
+            "currentImageInfo"
+        )
+        .innerText =
+        existingImageUrl
+            ? "Existing image attached."
+            : "";
+
+
+    document
+        .getElementById(
+            "currentPdfInfo"
+        )
+        .innerText =
+        existingPdfUrl
+            ? "Existing PDF attached."
+            : "";
+
+
+    updateSEOPreview();
+
+    updateArticlePreview();
+
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+/* =========================================
+   CANCEL EDIT
+========================================= */
+
+function cancelEdit() {
+
+    location.reload();
+
+}
+
+
+/* =========================================
+   DELETE
+========================================= */
+
+async function deleteNews(id) {
+
+    if (
+        !confirm(
+            "Delete this article?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    await deleteDoc(
+        doc(
+            db,
+            "news",
+            id
+        )
+    );
+
+
+    loadNews();
+
+}
+
+
+/* =========================================
+   LOAD NEWS
+========================================= */
+
+async function loadNews() {
+
+    try {
+
+        const snap =
+            await getDocs(
+                query(
+                    collection(
+                        db,
+                        "news"
+                    ),
+                    orderBy(
+                        "timestamp",
+                        "desc"
+                    )
+                )
+            );
+
+
+        const list =
+            document.getElementById(
+                "newsList"
+            );
+
+
+        list.innerHTML = "";
+
+
+        if (snap.empty) {
+
+            list.innerHTML =
+                `<div style="
+                    text-align:center;
+                    color:#777;
+                    padding:30px;
+                ">
+                    No published articles yet.
+                </div>`;
+
+            return;
+
+        }
+
+
+        snap.forEach(
+            docSnap => {
+
+                const data =
+                    docSnap.data();
+
+
+                const id =
+                    docSnap.id;
+
+
+                const image =
+                    data.imageUrl ||
+                    data.pdfThumbUrl ||
+                    "https://via.placeholder.com/80";
+
+
+                const date =
+                    data.timestamp?.toDate
+                        ? data.timestamp
+                            .toDate()
+                            .toLocaleString()
+                        : "Just now";
+
+
+                const div =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                div.className =
+                    "news-item";
+
+
+                div.innerHTML = `
+
+                    <img
+                        src="${escapeAttribute(image)}"
+                        style="
+                            width:60px;
+                            height:60px;
+                            object-fit:cover;
+                            border-radius:4px;
+                        "
+                    >
+
+                    <div style="flex:1;">
+
+                        <div style="
+                            font-size:14px;
+                            font-weight:bold;
+                            color:#003366;
+                        ">
+                            ${escapeHTML(
+                                data.title
+                            )}
+                        </div>
+
+                        <div style="
+                            font-size:11px;
+                            color:#666;
+                            margin:4px 0;
+                        ">
+                            📅 ${escapeHTML(date)}
+                        </div>
+
+                        <div style="
+                            font-size:11px;
+                            color:#2E8B57;
+                        ">
+                            🔑 ${
+                                escapeHTML(
+                                    data.focusKeyword ||
+                                    "-"
+                                )
+                            }
+                        </div>
+
+                        <div style="
+                            margin-top:5px;
+                        ">
+
+                            ${
+                                data.pdfUrl
+                                    ? `<span class="badge">
+                                        PDF
+                                      </span>`
+                                    : ""
+                            }
+
+                            ${
+                                data.tableData
+                                    ? `<span class="badge">
+                                        TABLE
+                                      </span>`
+                                    : ""
+                            }
+
+                            ${
+                                data.imageUrl
+                                    ? `<span class="badge">
+                                        IMAGE
+                                      </span>`
+                                    : ""
+                            }
+
+                        </div>
+
+                    </div>
+
+                    <div style="
+                        display:flex;
+                        flex-direction:column;
+                        gap:5px;
+                    ">
+
+                        <button
+                            style="
+                                background:#003366;
+                                color:white;
+                                border:none;
+                                padding:5px 10px;
+                                border-radius:4px;
+                                font-size:12px;
+                                cursor:pointer;
+                            "
+                            onclick="editNews('${escapeAttribute(id)}')"
+                        >
+                            Edit
+                        </button>
+
+                        <button
+                            class="delete-btn"
+                            onclick="deleteNews('${escapeAttribute(id)}')"
+                        >
+                            Delete
+                        </button>
+
+                    </div>
+
+                `;
+
+
+                list.appendChild(
+                    div
+                );
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        document
+            .getElementById(
+                "newsList"
+            )
+            .innerHTML =
+            `<div style="
+                color:#b22222;
+                padding:15px;
+            ">
+                Failed to load articles.
+            </div>`;
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
