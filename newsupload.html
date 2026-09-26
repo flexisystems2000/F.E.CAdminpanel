@@ -48,6 +48,14 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .news-item img{width:60px;height:60px;object-fit:cover;border-radius:4px}
 .badge{font-size:10px;padding:2px 6px;border-radius:10px;background:#e0e0e0;margin-left:5px;color:#333}
 .delete-btn{background:var(--red);width:auto;padding:5px 15px}
+.notify-btn{background:#003366;color:#fff;border:none;padding:6px 10px;border-radius:4px;font-size:12px;cursor:pointer;font-weight:bold}
+.notify-btn.sent{background:#2E8B57;cursor:not-allowed}
+.notify-btn.failed{background:#b22222}
+.notify-btn.sending{background:#777;cursor:not-allowed}
+.notification-status{font-size:11px;margin-top:5px;font-weight:bold}
+.notification-status.sent{color:#2E8B57}
+.notification-status.failed{color:#b22222}
+.notification-status.none{color:#777}
 @media(max-width:600px){.format-grid{grid-template-columns:1fr}.news-item{gap:8px}}
 </style>
 </head>
@@ -181,6 +189,7 @@ More information will be released soon." oninput="generateSEO(); updateArticlePr
 
 <div class="card">
 <h3>Recent Updates</h3>
+<p style="font-size:12px;color:#666;margin-top:-8px;margin-bottom:15px">Use <b>📧 Send to Subscribers</b> after publishing when you want to manually email the active news subscribers. The notification key is requested only when sending.</p>
 <div id="newsList">Loading...</div>
 </div>
 </div>
@@ -192,6 +201,7 @@ More information will be released soon." oninput="generateSEO(); updateArticlePr
 const SUPABASE_URL = "https://ryvauylmymcvbvvlaceb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_zF84MIhSPOZ3MXth_LLqDA_yQ4pIvp6";
 const NEWS_API = `${SUPABASE_URL}/rest/v1/news`;
+const NEWS_NOTIFICATION_FUNCTION = `${SUPABASE_URL}/functions/v1/send-news-notification-manual`;
 
 async function supabaseRequest(path="", options={}) {
     const headers = {"apikey":SUPABASE_KEY, ...(options.headers || {})};
@@ -250,6 +260,7 @@ window.prepareTableInsertion=prepareTableInsertion;
 window.insertCurrentTable=insertCurrentTable;
 window.togglePreview=togglePreview;
 window.updateArticlePreview=updateArticlePreview;
+window.sendNewsNotification=sendNewsNotification;
 
 /* =========================================
    INITIALIZATION
@@ -682,6 +693,87 @@ async function editNews(id){
 function cancelEdit(){location.reload();}
 
 /* =========================================
+   SEND NEWS NOTIFICATION
+========================================= */
+async function sendNewsNotification(id, title, status=""){
+    if(status === "sent"){
+        alert("This article has already been sent to subscribers.");
+        return;
+    }
+
+    const adminKey=window.prompt(
+        "Enter the NEWS_NOTIFICATION_ADMIN_KEY you saved in Supabase:"
+    );
+
+    if(adminKey===null)return;
+
+    const key=adminKey.trim();
+    if(!key){
+        alert("Notification key is required.");
+        return;
+    }
+
+    const confirmed=confirm(
+        `Send "${title}" to all active news subscribers now?\n\nThis action will send the email immediately.`
+    );
+
+    if(!confirmed)return;
+
+    const button=document.querySelector(`[data-notify-id="${CSS.escape(String(id))}"]`);
+    const statusEl=document.querySelector(`[data-notify-status="${CSS.escape(String(id))}"]`);
+
+    if(button){
+        button.disabled=true;
+        button.className="notify-btn sending";
+        button.innerText="⏳ Sending...";
+    }
+    if(statusEl){
+        statusEl.className="notification-status";
+        statusEl.innerText="Sending notification...";
+    }
+
+    try{
+        const response=await fetch(NEWS_NOTIFICATION_FUNCTION,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "x-notification-admin-key":key
+            },
+            body:JSON.stringify({news_id:id})
+        });
+
+        const text=await response.text();
+        let data={};
+        try{data=text?JSON.parse(text):{};}catch{data={error:text};}
+
+        if(!response.ok && response.status!==207){
+            throw new Error(data.error||data.message||`Notification failed (${response.status})`);
+        }
+
+        if(data.failed>0){
+            alert(`Notification finished with some failures.\n\nSent: ${data.sent||0}\nFailed: ${data.failed||0}\nTotal: ${data.total||0}`);
+        }else{
+            alert(`✅ Notification sent successfully.\n\nSent: ${data.sent||0} subscriber(s).`);
+        }
+
+        loadNews();
+
+    }catch(error){
+        console.error(error);
+        if(button){
+            button.disabled=false;
+            button.className="notify-btn failed";
+            button.innerText="📧 Retry Send";
+        }
+        if(statusEl){
+            statusEl.className="notification-status failed";
+            statusEl.innerText="Notification failed. You can retry.";
+        }
+        alert("Failed to send notification: "+error.message);
+    }
+}
+
+/* =========================================
    DELETE
 ========================================= */
 async function deleteNews(id){
@@ -705,7 +797,7 @@ async function deleteNews(id){
 async function loadNews(){
     try{
         const params=new URLSearchParams({
-            select:"id,title,image_url,pdf_thumb_url,pdf_url,table_data,timestamp,focus_keyword,slug",
+            select:"id,title,image_url,pdf_thumb_url,pdf_url,table_data,timestamp,focus_keyword,slug,notification_status,notification_sent_count,notification_failed_count,notification_sent_at",
             order:"timestamp.desc"
         });
 
@@ -739,9 +831,18 @@ async function loadNews(){
                     </div>
                 </div>
 
-                <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;flex-direction:column;gap:5px;min-width:125px">
                     <button style="background:#003366;color:white;border:none;padding:5px 10px;border-radius:4px;font-size:12px;cursor:pointer" onclick="editNews('${escapeAttribute(id)}')">Edit</button>
+                    ${data.notification_status === "sent"
+                        ? `<button class="notify-btn sent" disabled>✓ Sent to Subscribers</button>`
+                        : data.notification_status === "sending"
+                            ? `<button class="notify-btn sending" disabled>⏳ Sending...</button>`
+                            : `<button class="notify-btn ${data.notification_status === "failed" ? "failed" : ""}" data-notify-id="${escapeAttribute(id)}" onclick="sendNewsNotification(${escapeAttribute(JSON.stringify(id))}, ${escapeAttribute(JSON.stringify(data.title||"News Update"))}, ${escapeAttribute(JSON.stringify(data.notification_status||""))})">${data.notification_status === "failed" ? "📧 Retry Send" : "📧 Send to Subscribers"}</button>`
+                    }
                     <button class="delete-btn" onclick="deleteNews('${escapeAttribute(id)}')">Delete</button>
+                    <div class="notification-status ${data.notification_status === "sent" ? "sent" : data.notification_status === "failed" ? "failed" : "none"}" data-notify-status="${escapeAttribute(id)}">
+                        ${data.notification_status === "sent" ? `Sent: ${Number(data.notification_sent_count||0)}` : data.notification_status === "failed" ? `Sent: ${Number(data.notification_sent_count||0)} · Failed: ${Number(data.notification_failed_count||0)}` : "Not sent yet"}
+                    </div>
                 </div>
             `;
 
