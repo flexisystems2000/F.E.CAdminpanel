@@ -361,6 +361,7 @@
                     <label>
                         Scholarship Title <span class="required">*</span>
                     </label>
+
                     <input
                         type="text"
                         id="title"
@@ -371,6 +372,7 @@
 
                 <div class="field">
                     <label>Organization</label>
+
                     <input
                         type="text"
                         id="organization"
@@ -380,6 +382,7 @@
 
                 <div class="field">
                     <label>Amount</label>
+
                     <input
                         type="text"
                         id="amount"
@@ -389,6 +392,7 @@
 
                 <div class="field">
                     <label>Deadline</label>
+
                     <input
                         type="date"
                         id="deadline"
@@ -397,6 +401,7 @@
 
                 <div class="field">
                     <label>Location</label>
+
                     <input
                         type="text"
                         id="location"
@@ -406,6 +411,7 @@
 
                 <div class="field">
                     <label>Study Level</label>
+
                     <input
                         type="text"
                         id="study_level"
@@ -415,6 +421,7 @@
 
                 <div class="field">
                     <label>Field of Study</label>
+
                     <input
                         type="text"
                         id="field_of_study"
@@ -424,6 +431,7 @@
 
                 <div class="field">
                     <label>Status</label>
+
                     <select id="status">
                         <option value="draft">Draft</option>
                         <option value="active">Active</option>
@@ -433,11 +441,13 @@
 
                 <div class="field">
                     <label>Slug</label>
+
                     <input
                         type="text"
                         id="slug"
                         placeholder="e.g. federal-government-scholarship"
                     >
+
                     <div class="small-note">
                         Leave empty to generate automatically from the title.
                     </div>
@@ -445,6 +455,7 @@
 
                 <div class="field full">
                     <label>Application URL</label>
+
                     <input
                         type="url"
                         id="application_url"
@@ -454,6 +465,7 @@
 
                 <div class="field full">
                     <label>Source URL</label>
+
                     <input
                         type="url"
                         id="source_url"
@@ -463,6 +475,7 @@
 
                 <div class="field full">
                     <label>Image URL</label>
+
                     <input
                         type="url"
                         id="image_url"
@@ -472,6 +485,7 @@
 
                 <div class="field full">
                     <label>Description</label>
+
                     <textarea
                         id="description"
                         placeholder="Write a short description of the scholarship..."
@@ -480,6 +494,7 @@
 
                 <div class="field full">
                     <label>Eligibility</label>
+
                     <textarea
                         id="eligibility"
                         placeholder="Explain who is eligible to apply..."
@@ -491,6 +506,7 @@
                     <label>Featured Scholarship</label>
 
                     <div class="checkbox-row">
+
                         <input
                             type="checkbox"
                             id="featured"
@@ -499,6 +515,7 @@
                         <span>
                             Display this scholarship as featured.
                         </span>
+
                     </div>
 
                 </div>
@@ -571,11 +588,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
 
-
 <script>
 
 const firebaseConfig = {
-    apiKey: "AIzaSyA0B5m6pk1T1peGSS7qufVPEMOMuplnNRNM",
+    apiKey: "AIzaSyA0B5m6pk1T1peGSS7quvFPEMOMuplnNRNM",
     authDomain: "waec2026jamb2027.firebaseapp.com",
     databaseURL: "https://waec2026jamb2027-default-rtdb.firebaseio.com",
     projectId: "waec2026jamb2027",
@@ -638,21 +654,181 @@ let scholarships = [];
 
 
 /* =========================================================
+   ADMIN SESSION
+========================================================= */
+
+/*
+ * index.html creates this session after:
+ *
+ * 1. Firebase login
+ * 2. Firestore admins/{uid} lookup
+ *
+ * We read it here before Firebase's auth-state callback.
+ *
+ * This prevents the old immediate redirect loop.
+ */
+
+let adminSession = null;
+
+try {
+
+    const savedSession =
+        sessionStorage.getItem("fecAdminSession");
+
+    if (savedSession) {
+
+        adminSession =
+            JSON.parse(savedSession);
+
+    }
+
+} catch (error) {
+
+    console.error(
+        "Could not read F.E.C admin session:",
+        error
+    );
+
+}
+
+
+/* =========================================================
    AUTHENTICATION
 ========================================================= */
 
+/*
+ * IMPORTANT:
+ *
+ * The old code immediately redirected to index.html whenever
+ * Firebase temporarily returned null.
+ *
+ * That is what caused:
+ *
+ * home.html
+ *     ↓
+ * scholarship.html
+ *     ↓
+ * Firebase still restoring session
+ *     ↓
+ * user === null
+ *     ↓
+ * index.html
+ *
+ * We now allow the session created by index.html to keep the
+ * page open while Firebase restores its authentication state.
+ */
+
+let firebaseAuthChecked = false;
+
+
 auth.onAuthStateChanged(function(user) {
 
-    if (!user) {
+    firebaseAuthChecked = true;
 
-        if (navigator.onLine) {
-            window.location.href = "index.html";
+
+    /* =====================================================
+       FIREBASE USER EXISTS
+    ====================================================== */
+
+    if (user) {
+
+        /*
+         * Firebase authentication is confirmed.
+         *
+         * The session created by index.html is still used
+         * for the admin/center information.
+         */
+
+        if (!adminSession) {
+
+            /*
+             * Compatibility fallback for an older session.
+             */
+
+            const centerID =
+                sessionStorage.getItem("centerID") ||
+                localStorage.getItem("centerID") ||
+                "";
+
+            const centerName =
+                sessionStorage.getItem("centerName") ||
+                localStorage.getItem("centerName") ||
+                "Authorized Center";
+
+            const adminEmail =
+                sessionStorage.getItem("adminEmail") ||
+                localStorage.getItem("adminEmail") ||
+                user.email ||
+                "";
+
+
+            adminSession = {
+
+                uid:
+                    user.uid,
+
+                email:
+                    user.email ||
+                    adminEmail,
+
+                centerID:
+                    centerID,
+
+                centerName:
+                    centerName,
+
+                adminEmail:
+                    adminEmail
+
+            };
+
+
+            sessionStorage.setItem(
+                "fecAdminSession",
+                JSON.stringify(adminSession)
+            );
+
         }
+
+
+        loadScholarships();
 
         return;
     }
 
-    loadScholarships();
+
+    /* =====================================================
+       NO FIREBASE USER
+    ====================================================== */
+
+    /*
+     * If we already have the authenticated admin session
+     * created by index.html, DON'T redirect immediately.
+     *
+     * Firebase can still be restoring its persisted state.
+     */
+
+    if (adminSession) {
+
+        loadScholarships();
+
+        return;
+    }
+
+
+    /*
+     * No Firebase user AND no admin session.
+     *
+     * Only in this case do we return to login.
+     */
+
+    if (navigator.onLine) {
+
+        window.location.replace(
+            "index.html"
+        );
+
+    }
 
 });
 
@@ -679,16 +855,20 @@ async function loadScholarships() {
             }
         );
 
+
         if (!response.ok) {
 
             const errorText =
                 await response.text();
 
             throw new Error(errorText);
+
         }
+
 
         scholarships =
             await response.json();
+
 
         renderScholarships();
 
@@ -703,7 +883,9 @@ async function loadScholarships() {
                 ${escapeHtml(error.message)}
             </div>
         `;
+
     }
+
 }
 
 
@@ -718,10 +900,12 @@ function renderScholarships() {
             .trim()
             .toLowerCase();
 
+
     const filtered =
         scholarships.filter(function(item) {
 
             const text = [
+
                 item.title,
                 item.organization,
                 item.description,
@@ -729,10 +913,12 @@ function renderScholarships() {
                 item.field_of_study,
                 item.location,
                 item.status
+
             ]
             .filter(Boolean)
             .join(" ")
             .toLowerCase();
+
 
             return text.includes(search);
 
@@ -757,6 +943,7 @@ function renderScholarships() {
             <table>
 
                 <thead>
+
                     <tr>
                         <th>Scholarship</th>
                         <th>Organization</th>
@@ -765,6 +952,7 @@ function renderScholarships() {
                         <th>Featured</th>
                         <th>Actions</th>
                     </tr>
+
                 </thead>
 
                 <tbody>
@@ -778,12 +966,16 @@ function renderScholarships() {
 
                 <td>
                     <strong>
-                        ${escapeHtml(item.title || "Untitled")}
+                        ${escapeHtml(
+                            item.title || "Untitled"
+                        )}
                     </strong>
                 </td>
 
                 <td>
-                    ${escapeHtml(item.organization || "—")}
+                    ${escapeHtml(
+                        item.organization || "—"
+                    )}
                 </td>
 
                 <td>
@@ -791,9 +983,13 @@ function renderScholarships() {
                 </td>
 
                 <td>
-                    <span class="status ${escapeHtml(item.status || "draft")}">
+                    <span class="status ${escapeHtml(
+                        item.status || "draft"
+                    )}">
                         ${escapeHtml(
-                            capitalize(item.status || "draft")
+                            capitalize(
+                                item.status || "draft"
+                            )
                         )}
                     </span>
                 </td>
@@ -802,7 +998,7 @@ function renderScholarships() {
                     ${
                         item.featured
                         ? '<span class="featured">★ Featured</span>'
-                        : '—'
+                        : "—"
                     }
                 </td>
 
@@ -842,7 +1038,9 @@ function renderScholarships() {
         </div>
     `;
 
-    tableContainer.innerHTML = html;
+
+    tableContainer.innerHTML =
+        html;
 }
 
 
@@ -866,11 +1064,20 @@ form.addEventListener(
 
         event.preventDefault();
 
+
         const id =
-            document.getElementById("scholarshipId").value.trim();
+            document
+                .getElementById("scholarshipId")
+                .value
+                .trim();
+
 
         const title =
-            document.getElementById("title").value.trim();
+            document
+                .getElementById("title")
+                .value
+                .trim();
+
 
         if (!title) {
 
@@ -884,10 +1091,17 @@ form.addEventListener(
 
 
         let slug =
-            document.getElementById("slug").value.trim();
+            document
+                .getElementById("slug")
+                .value
+                .trim();
+
 
         if (!slug) {
-            slug = createSlug(title);
+
+            slug =
+                createSlug(title);
+
         }
 
 
@@ -931,10 +1145,14 @@ form.addEventListener(
             slug: slug,
 
             status:
-                document.getElementById("status").value,
+                document
+                    .getElementById("status")
+                    .value,
 
             featured:
-                document.getElementById("featured").checked,
+                document
+                    .getElementById("featured")
+                    .checked,
 
             updated_at:
                 new Date().toISOString()
@@ -953,17 +1171,24 @@ form.addEventListener(
             if (id) {
 
                 response = await fetch(
+
                     SUPABASE_URL +
                     "/rest/v1/scholarships?id=eq." +
                     encodeURIComponent(id),
+
                     {
                         method: "PATCH",
+
                         headers: {
                             ...SUPABASE_HEADERS,
-                            "Prefer": "return=representation"
+                            "Prefer":
+                                "return=representation"
                         },
-                        body: JSON.stringify(data)
+
+                        body:
+                            JSON.stringify(data)
                     }
+
                 );
 
             } else {
@@ -971,17 +1196,25 @@ form.addEventListener(
                 data.created_at =
                     new Date().toISOString();
 
+
                 response = await fetch(
+
                     SUPABASE_URL +
                     "/rest/v1/scholarships",
+
                     {
                         method: "POST",
+
                         headers: {
                             ...SUPABASE_HEADERS,
-                            "Prefer": "return=representation"
+                            "Prefer":
+                                "return=representation"
                         },
-                        body: JSON.stringify(data)
+
+                        body:
+                            JSON.stringify(data)
                     }
+
                 );
 
             }
@@ -992,14 +1225,17 @@ form.addEventListener(
                 const errorText =
                     await response.text();
 
-                throw new Error(errorText);
+                throw new Error(
+                    errorText
+                );
+
             }
 
 
             showMessage(
                 id
-                ? "Scholarship updated successfully."
-                : "Scholarship published successfully.",
+                    ? "Scholarship updated successfully."
+                    : "Scholarship published successfully.",
                 "success"
             );
 
@@ -1037,68 +1273,119 @@ function editScholarship(id) {
 
     const item =
         scholarships.find(
-            scholarship => scholarship.id === id
+            scholarship =>
+                scholarship.id === id
         );
+
 
     if (!item) {
         return;
     }
 
 
-    document.getElementById("scholarshipId").value =
+    document.getElementById(
+        "scholarshipId"
+    ).value =
         item.id || "";
 
-    document.getElementById("title").value =
+
+    document.getElementById(
+        "title"
+    ).value =
         item.title || "";
 
-    document.getElementById("organization").value =
+
+    document.getElementById(
+        "organization"
+    ).value =
         item.organization || "";
 
-    document.getElementById("description").value =
+
+    document.getElementById(
+        "description"
+    ).value =
         item.description || "";
 
-    document.getElementById("eligibility").value =
+
+    document.getElementById(
+        "eligibility"
+    ).value =
         item.eligibility || "";
 
-    document.getElementById("amount").value =
+
+    document.getElementById(
+        "amount"
+    ).value =
         item.amount || "";
 
-    document.getElementById("deadline").value =
+
+    document.getElementById(
+        "deadline"
+    ).value =
         item.deadline || "";
 
-    document.getElementById("location").value =
+
+    document.getElementById(
+        "location"
+    ).value =
         item.location || "";
 
-    document.getElementById("study_level").value =
+
+    document.getElementById(
+        "study_level"
+    ).value =
         item.study_level || "";
 
-    document.getElementById("field_of_study").value =
+
+    document.getElementById(
+        "field_of_study"
+    ).value =
         item.field_of_study || "";
 
-    document.getElementById("application_url").value =
+
+    document.getElementById(
+        "application_url"
+    ).value =
         item.application_url || "";
 
-    document.getElementById("source_url").value =
+
+    document.getElementById(
+        "source_url"
+    ).value =
         item.source_url || "";
 
-    document.getElementById("image_url").value =
+
+    document.getElementById(
+        "image_url"
+    ).value =
         item.image_url || "";
 
-    document.getElementById("slug").value =
+
+    document.getElementById(
+        "slug"
+    ).value =
         item.slug || "";
 
-    document.getElementById("status").value =
+
+    document.getElementById(
+        "status"
+    ).value =
         item.status || "draft";
 
-    document.getElementById("featured").checked =
+
+    document.getElementById(
+        "featured"
+    ).checked =
         Boolean(item.featured);
 
 
     formTitle.textContent =
         "Edit Scholarship";
 
+
     saveBtn.textContent =
         "Update Scholarship";
+
 
     cancelEditBtn.classList.remove(
         "hidden"
@@ -1109,6 +1396,7 @@ function editScholarship(id) {
         top: 0,
         behavior: "smooth"
     });
+
 }
 
 
@@ -1120,8 +1408,10 @@ async function deleteScholarship(id) {
 
     const item =
         scholarships.find(
-            scholarship => scholarship.id === id
+            scholarship =>
+                scholarship.id === id
         );
+
 
     if (!item) {
         return;
@@ -1144,13 +1434,16 @@ async function deleteScholarship(id) {
 
         const response =
             await fetch(
+
                 SUPABASE_URL +
                 "/rest/v1/scholarships?id=eq." +
                 encodeURIComponent(id),
+
                 {
                     method: "DELETE",
                     headers: SUPABASE_HEADERS
                 }
+
             );
 
 
@@ -1159,7 +1452,10 @@ async function deleteScholarship(id) {
             const errorText =
                 await response.text();
 
-            throw new Error(errorText);
+            throw new Error(
+                errorText
+            );
+
         }
 
 
@@ -1181,7 +1477,9 @@ async function deleteScholarship(id) {
             error.message,
             "error"
         );
+
     }
+
 }
 
 
@@ -1193,19 +1491,24 @@ function resetForm() {
 
     form.reset();
 
+
     document.getElementById(
         "scholarshipId"
     ).value = "";
 
+
     formTitle.textContent =
         "Add Scholarship";
+
 
     saveBtn.textContent =
         "Publish Scholarship";
 
+
     cancelEditBtn.classList.add(
         "hidden"
     );
+
 }
 
 
@@ -1219,6 +1522,7 @@ function getValue(id) {
         .getElementById(id)
         .value
         .trim();
+
 }
 
 
@@ -1229,6 +1533,7 @@ function createSlug(text) {
         .trim()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
+
 }
 
 
@@ -1238,8 +1543,10 @@ function capitalize(text) {
         return "";
     }
 
+
     return text.charAt(0).toUpperCase() +
            text.slice(1);
+
 }
 
 
@@ -1249,12 +1556,17 @@ function formatDate(date) {
         return "—";
     }
 
+
     const d =
-        new Date(date + "T00:00:00");
+        new Date(
+            date + "T00:00:00"
+        );
+
 
     if (Number.isNaN(d.getTime())) {
         return escapeHtml(date);
     }
+
 
     return d.toLocaleDateString(
         "en-NG",
@@ -1264,6 +1576,7 @@ function formatDate(date) {
             year: "numeric"
         }
     );
+
 }
 
 
@@ -1275,6 +1588,7 @@ function escapeHtml(value) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+
 }
 
 
@@ -1286,8 +1600,10 @@ function showMessage(
     messageBox.textContent =
         message;
 
+
     messageBox.className =
         "message " + type;
+
 
     window.scrollTo({
         top: 0,
@@ -1295,12 +1611,16 @@ function showMessage(
     });
 
 
-    setTimeout(function() {
+    setTimeout(
+        function() {
 
-        messageBox.className =
-            "message";
+            messageBox.className =
+                "message";
 
-    }, 6000);
+        },
+        6000
+    );
+
 }
 
 
@@ -1308,6 +1628,7 @@ function setSaving(saving) {
 
     saveBtn.disabled =
         saving;
+
 
     if (saving) {
 
@@ -1317,19 +1638,29 @@ function setSaving(saving) {
     } else {
 
         saveBtn.textContent =
-            document.getElementById(
-                "scholarshipId"
-            ).value
-            ? "Update Scholarship"
-            : "Publish Scholarship";
+
+            document
+                .getElementById("scholarshipId")
+                .value
+
+                ? "Update Scholarship"
+
+                : "Publish Scholarship";
+
     }
+
 }
 
+
+/* =========================================================
+   BACK TO DASHBOARD
+========================================================= */
 
 function goBack() {
 
     window.location.href =
         "home.html";
+
 }
 
 
@@ -1340,7 +1671,9 @@ function goBack() {
 window.addEventListener(
     "online",
     function() {
+
         loadScholarships();
+
     }
 );
 
