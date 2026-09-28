@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Scholarship Manager • F.E.C Admin</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7f9;
+            color: #222;
+        }
+
+        header {
+            background: #003366;
+            color: white;
+            padding: 18px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+
+        header .top {
+            max-width: 1200px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 13px;
+            opacity: .85;
+        }
+
+        .back-btn {
+            background: white;
+            color: #003366;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 7px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        main {
+            width: 95%;
+            max-width: 1200px;
+            margin: 25px auto 50px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 22px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.07);
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #003366;
+            font-size: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 7px;
+            color: #333;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            border: 1px solid #ccd5dc;
+            border-radius: 7px;
+            padding: 12px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #003366;
+            box-shadow: 0 0 0 2px rgba(0,51,102,.08);
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 8px;
+        }
+
+        .checkbox-row input {
+            width: auto;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            border: none;
+            border-radius: 7px;
+            padding: 11px 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #003366;
+            color: white;
+        }
+
+        .btn-success {
+            background: #2e8b57;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #c62828;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e5e9ed;
+            color: #333;
+        }
+
+        button:hover {
+            opacity: .9;
+        }
+
+        .message {
+            display: none;
+            padding: 12px 15px;
+            border-radius: 7px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .message.success {
+            display: block;
+            background: #e7f6ed;
+            color: #176b3a;
+            border: 1px solid #b9e5c9;
+        }
+
+        .message.error {
+            display: block;
+            background: #fdeaea;
+            color: #a51d1d;
+            border: 1px solid #efb5b5;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .toolbar input {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e8eb;
+            text-align: left;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f1f4f6;
+            color: #003366;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status.active {
+            background: #e6f6ed;
+            color: #18733f;
+        }
+
+        .status.draft {
+            background: #fff5d8;
+            color: #8a6200;
+        }
+
+        .status.closed {
+            background: #f3e8e8;
+            color: #9c2c2c;
+        }
+
+        .featured {
+            font-size: 11px;
+            font-weight: bold;
+            color: #946d00;
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .row-actions button {
+            padding: 7px 10px;
+            font-size: 12px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 25px;
+            color: #666;
+        }
+
+        .required {
+            color: #c62828;
+        }
+
+        .small-note {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 700px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .field.full {
+                grid-column: auto;
+            }
+
+            header .top {
+                align-items: flex-start;
+            }
+
+            header h1 {
+                font-size: 17px;
+            }
+
+            .back-btn {
+                padding: 8px 11px;
+                font-size: 12px;
+            }
+
+            .section {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="top">
+        <div>
+            <h1>Scholarship Manager</h1>
+            <p>F.E.C Admin Panel • Flexi Educational Consult</p>
+        </div>
+
+        <button class="back-btn" onclick="goBack()">
+            ← Dashboard
+        </button>
+    </div>
+</header>
+
+<main>
+
+    <div id="message" class="message"></div>
+
+    <!-- ADD / EDIT SCHOLARSHIP -->
+    <section class="section">
+
+        <h2 id="formTitle">Add Scholarship</h2>
+
+        <form id="scholarshipForm">
+
+            <input type="hidden" id="scholarshipId">
+
+            <div class="grid">
+
+                <div class="field full">
+                    <label>
+                        Scholarship Title <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="title"
+                        placeholder="e.g. Federal Government Scholarship Award"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Organization</label>
+                    <input
+                        type="text"
+                        id="organization"
+                        placeholder="Organization / Sponsor"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Amount</label>
+                    <input
+                        type="text"
+                        id="amount"
+                        placeholder="e.g. ₦500,000"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Deadline</label>
+                    <input
+                        type="date"
+                        id="deadline"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Location</label>
+                    <input
+                        type="text"
+                        id="location"
+                        placeholder="e.g. Nigeria"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Study Level</label>
+                    <input
+                        type="text"
+                        id="study_level"
+                        placeholder="e.g. Undergraduate"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Field of Study</label>
+                    <input
+                        type="text"
+                        id="field_of_study"
+                        placeholder="e.g. All Courses"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Status</label>
+                    <select id="status">
+                        <option value="draft">Draft</option>
+                        <option value="active">Active</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Slug</label>
+                    <input
+                        type="text"
+                        id="slug"
+                        placeholder="e.g. federal-government-scholarship"
+                    >
+                    <div class="small-note">
+                        Leave empty to generate automatically from the title.
+                    </div>
+                </div>
+
+                <div class="field full">
+                    <label>Application URL</label>
+                    <input
+                        type="url"
+                        id="application_url"
+                        placeholder="https://official-application-site.com"
+                    >
+                </div>
+
+                <div class="field full">
+                    <label>Source URL</label>
+                    <input
+                        type="url"
+                        id="source_url"
+                        placeholder="https://myschool.ng/..."
+                    >
+                </div>
+
+                <div class="field full">
+                    <label>Image URL</label>
+                    <input
+                        type="url"
+                        id="image_url"
+                        placeholder="https://example.com/scholarship-image.jpg"
+                    >
+                </div>
+
+                <div class="field full">
+                    <label>Description</label>
+                    <textarea
+                        id="description"
+                        placeholder="Write a short description of the scholarship..."
+                    ></textarea>
+                </div>
+
+                <div class="field full">
+                    <label>Eligibility</label>
+                    <textarea
+                        id="eligibility"
+                        placeholder="Explain who is eligible to apply..."
+                    ></textarea>
+                </div>
+
+                <div class="field full">
+
+                    <label>Featured Scholarship</label>
+
+                    <div class="checkbox-row">
+                        <input
+                            type="checkbox"
+                            id="featured"
+                        >
+
+                        <span>
+                            Display this scholarship as featured.
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                    id="saveBtn"
+                >
+                    Publish Scholarship
+                </button>
+
+                <button
+                    type="button"
+                    class="btn-secondary hidden"
+                    id="cancelEditBtn"
+                    onclick="resetForm()"
+                >
+                    Cancel Edit
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- SCHOLARSHIP LIST -->
+    <section class="section">
+
+        <h2>Scholarships</h2>
+
+        <div class="toolbar">
+
+            <input
+                type="search"
+                id="searchInput"
+                placeholder="Search scholarships..."
+            >
+
+            <button
+                type="button"
+                class="btn-secondary"
+                onclick="loadScholarships()"
+            >
+                Refresh
+            </button>
+
+        </div>
+
+        <div id="tableContainer">
+
+            <div class="loading">
+                Loading scholarships...
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+
+
+<script>
+
+const firebaseConfig = {
+    apiKey: "AIzaSyA0B5m6pk1T1peGSS7qufVPEMOMuplnNRNM",
+    authDomain: "waec2026jamb2027.firebaseapp.com",
+    databaseURL: "https://waec2026jamb2027-default-rtdb.firebaseio.com",
+    projectId: "waec2026jamb2027",
+    storageBucket: "waec2026jamb2027.firebasestorage.app",
+    messagingSenderId: "465373608641",
+    appId: "1:465373608641:web:03d21cead99a3c9b65f240",
+    measurementId: "G-XD6YTGGC30"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+    "https://ryvauylmymcvbvvlaceb.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_zF84MIhSPOZ3MXth_LLqDA_yQ4pIvp6";
+
+
+const SUPABASE_HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": "Bearer " + SUPABASE_KEY,
+    "Content-Type": "application/json"
+};
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const form =
+    document.getElementById("scholarshipForm");
+
+const messageBox =
+    document.getElementById("message");
+
+const tableContainer =
+    document.getElementById("tableContainer");
+
+const searchInput =
+    document.getElementById("searchInput");
+
+const formTitle =
+    document.getElementById("formTitle");
+
+const saveBtn =
+    document.getElementById("saveBtn");
+
+const cancelEditBtn =
+    document.getElementById("cancelEditBtn");
+
+
+let scholarships = [];
+
+
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
+
+auth.onAuthStateChanged(function(user) {
+
+    if (!user) {
+
+        if (navigator.onLine) {
+            window.location.href = "index.html";
+        }
+
+        return;
+    }
+
+    loadScholarships();
+
+});
+
+
+/* =========================================================
+   LOAD SCHOLARSHIPS
+========================================================= */
+
+async function loadScholarships() {
+
+    tableContainer.innerHTML =
+        '<div class="loading">Loading scholarships...</div>';
+
+    try {
+
+        const response = await fetch(
+            SUPABASE_URL +
+            "/rest/v1/scholarships" +
+            "?select=*" +
+            "&order=created_at.desc",
+            {
+                method: "GET",
+                headers: SUPABASE_HEADERS
+            }
+        );
+
+        if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
+            throw new Error(errorText);
+        }
+
+        scholarships =
+            await response.json();
+
+        renderScholarships();
+
+    } catch (error) {
+
+        console.error(error);
+
+        tableContainer.innerHTML = `
+            <div class="empty">
+                Unable to load scholarships.
+                <br><br>
+                ${escapeHtml(error.message)}
+            </div>
+        `;
+    }
+}
+
+
+/* =========================================================
+   RENDER SCHOLARSHIPS
+========================================================= */
+
+function renderScholarships() {
+
+    const search =
+        searchInput.value
+            .trim()
+            .toLowerCase();
+
+    const filtered =
+        scholarships.filter(function(item) {
+
+            const text = [
+                item.title,
+                item.organization,
+                item.description,
+                item.study_level,
+                item.field_of_study,
+                item.location,
+                item.status
+            ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+
+            return text.includes(search);
+
+        });
+
+
+    if (!filtered.length) {
+
+        tableContainer.innerHTML = `
+            <div class="empty">
+                No scholarships found.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    let html = `
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Scholarship</th>
+                        <th>Organization</th>
+                        <th>Deadline</th>
+                        <th>Status</th>
+                        <th>Featured</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+    `;
+
+
+    filtered.forEach(function(item) {
+
+        html += `
+            <tr>
+
+                <td>
+                    <strong>
+                        ${escapeHtml(item.title || "Untitled")}
+                    </strong>
+                </td>
+
+                <td>
+                    ${escapeHtml(item.organization || "—")}
+                </td>
+
+                <td>
+                    ${formatDate(item.deadline)}
+                </td>
+
+                <td>
+                    <span class="status ${escapeHtml(item.status || "draft")}">
+                        ${escapeHtml(
+                            capitalize(item.status || "draft")
+                        )}
+                    </span>
+                </td>
+
+                <td>
+                    ${
+                        item.featured
+                        ? '<span class="featured">★ Featured</span>'
+                        : '—'
+                    }
+                </td>
+
+                <td>
+
+                    <div class="row-actions">
+
+                        <button
+                            class="btn-primary"
+                            onclick="editScholarship('${item.id}')"
+                        >
+                            Edit
+                        </button>
+
+                        <button
+                            class="btn-danger"
+                            onclick="deleteScholarship('${item.id}')"
+                        >
+                            Delete
+                        </button>
+
+                    </div>
+
+                </td>
+
+            </tr>
+        `;
+
+    });
+
+
+    html += `
+                </tbody>
+
+            </table>
+
+        </div>
+    `;
+
+    tableContainer.innerHTML = html;
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+searchInput.addEventListener(
+    "input",
+    renderScholarships
+);
+
+
+/* =========================================================
+   SUBMIT
+========================================================= */
+
+form.addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const id =
+            document.getElementById("scholarshipId").value.trim();
+
+        const title =
+            document.getElementById("title").value.trim();
+
+        if (!title) {
+
+            showMessage(
+                "Scholarship title is required.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        let slug =
+            document.getElementById("slug").value.trim();
+
+        if (!slug) {
+            slug = createSlug(title);
+        }
+
+
+        const data = {
+
+            title: title,
+
+            organization:
+                getValue("organization"),
+
+            description:
+                getValue("description"),
+
+            eligibility:
+                getValue("eligibility"),
+
+            amount:
+                getValue("amount"),
+
+            deadline:
+                getValue("deadline") || null,
+
+            location:
+                getValue("location"),
+
+            study_level:
+                getValue("study_level"),
+
+            field_of_study:
+                getValue("field_of_study"),
+
+            application_url:
+                getValue("application_url"),
+
+            source_url:
+                getValue("source_url"),
+
+            image_url:
+                getValue("image_url"),
+
+            slug: slug,
+
+            status:
+                document.getElementById("status").value,
+
+            featured:
+                document.getElementById("featured").checked,
+
+            updated_at:
+                new Date().toISOString()
+
+        };
+
+
+        setSaving(true);
+
+
+        try {
+
+            let response;
+
+
+            if (id) {
+
+                response = await fetch(
+                    SUPABASE_URL +
+                    "/rest/v1/scholarships?id=eq." +
+                    encodeURIComponent(id),
+                    {
+                        method: "PATCH",
+                        headers: {
+                            ...SUPABASE_HEADERS,
+                            "Prefer": "return=representation"
+                        },
+                        body: JSON.stringify(data)
+                    }
+                );
+
+            } else {
+
+                data.created_at =
+                    new Date().toISOString();
+
+                response = await fetch(
+                    SUPABASE_URL +
+                    "/rest/v1/scholarships",
+                    {
+                        method: "POST",
+                        headers: {
+                            ...SUPABASE_HEADERS,
+                            "Prefer": "return=representation"
+                        },
+                        body: JSON.stringify(data)
+                    }
+                );
+
+            }
+
+
+            if (!response.ok) {
+
+                const errorText =
+                    await response.text();
+
+                throw new Error(errorText);
+            }
+
+
+            showMessage(
+                id
+                ? "Scholarship updated successfully."
+                : "Scholarship published successfully.",
+                "success"
+            );
+
+
+            resetForm();
+
+            await loadScholarships();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                "Could not save scholarship: " +
+                error.message,
+                "error"
+            );
+
+        } finally {
+
+            setSaving(false);
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   EDIT
+========================================================= */
+
+function editScholarship(id) {
+
+    const item =
+        scholarships.find(
+            scholarship => scholarship.id === id
+        );
+
+    if (!item) {
+        return;
+    }
+
+
+    document.getElementById("scholarshipId").value =
+        item.id || "";
+
+    document.getElementById("title").value =
+        item.title || "";
+
+    document.getElementById("organization").value =
+        item.organization || "";
+
+    document.getElementById("description").value =
+        item.description || "";
+
+    document.getElementById("eligibility").value =
+        item.eligibility || "";
+
+    document.getElementById("amount").value =
+        item.amount || "";
+
+    document.getElementById("deadline").value =
+        item.deadline || "";
+
+    document.getElementById("location").value =
+        item.location || "";
+
+    document.getElementById("study_level").value =
+        item.study_level || "";
+
+    document.getElementById("field_of_study").value =
+        item.field_of_study || "";
+
+    document.getElementById("application_url").value =
+        item.application_url || "";
+
+    document.getElementById("source_url").value =
+        item.source_url || "";
+
+    document.getElementById("image_url").value =
+        item.image_url || "";
+
+    document.getElementById("slug").value =
+        item.slug || "";
+
+    document.getElementById("status").value =
+        item.status || "draft";
+
+    document.getElementById("featured").checked =
+        Boolean(item.featured);
+
+
+    formTitle.textContent =
+        "Edit Scholarship";
+
+    saveBtn.textContent =
+        "Update Scholarship";
+
+    cancelEditBtn.classList.remove(
+        "hidden"
+    );
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+async function deleteScholarship(id) {
+
+    const item =
+        scholarships.find(
+            scholarship => scholarship.id === id
+        );
+
+    if (!item) {
+        return;
+    }
+
+
+    const confirmed =
+        confirm(
+            "Delete this scholarship?\n\n" +
+            item.title
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                SUPABASE_URL +
+                "/rest/v1/scholarships?id=eq." +
+                encodeURIComponent(id),
+                {
+                    method: "DELETE",
+                    headers: SUPABASE_HEADERS
+                }
+            );
+
+
+        if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
+            throw new Error(errorText);
+        }
+
+
+        showMessage(
+            "Scholarship deleted successfully.",
+            "success"
+        );
+
+
+        await loadScholarships();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            "Could not delete scholarship: " +
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   RESET FORM
+========================================================= */
+
+function resetForm() {
+
+    form.reset();
+
+    document.getElementById(
+        "scholarshipId"
+    ).value = "";
+
+    formTitle.textContent =
+        "Add Scholarship";
+
+    saveBtn.textContent =
+        "Publish Scholarship";
+
+    cancelEditBtn.classList.add(
+        "hidden"
+    );
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function getValue(id) {
+
+    return document
+        .getElementById(id)
+        .value
+        .trim();
+}
+
+
+function createSlug(text) {
+
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+
+function capitalize(text) {
+
+    if (!text) {
+        return "";
+    }
+
+    return text.charAt(0).toUpperCase() +
+           text.slice(1);
+}
+
+
+function formatDate(date) {
+
+    if (!date) {
+        return "—";
+    }
+
+    const d =
+        new Date(date + "T00:00:00");
+
+    if (Number.isNaN(d.getTime())) {
+        return escapeHtml(date);
+    }
+
+    return d.toLocaleDateString(
+        "en-NG",
+        {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        }
+    );
+}
+
+
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function showMessage(
+    message,
+    type
+) {
+
+    messageBox.textContent =
+        message;
+
+    messageBox.className =
+        "message " + type;
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+
+    setTimeout(function() {
+
+        messageBox.className =
+            "message";
+
+    }, 6000);
+}
+
+
+function setSaving(saving) {
+
+    saveBtn.disabled =
+        saving;
+
+    if (saving) {
+
+        saveBtn.textContent =
+            "Saving...";
+
+    } else {
+
+        saveBtn.textContent =
+            document.getElementById(
+                "scholarshipId"
+            ).value
+            ? "Update Scholarship"
+            : "Publish Scholarship";
+    }
+}
+
+
+function goBack() {
+
+    window.location.href =
+        "home.html";
+}
+
+
+/* =========================================================
+   ONLINE / OFFLINE
+========================================================= */
+
+window.addEventListener(
+    "online",
+    function() {
+        loadScholarships();
+    }
+);
+
+</script>
+
+</body>
+</html>
