@@ -172,7 +172,74 @@
             background: #feebeb;
         }
 
-        /* Offline overlay */
+        /* =====================================================
+           AUTH LOADING
+        ====================================================== */
+
+        #authLoading {
+            position: fixed;
+            inset: 0;
+            background: #f4f7f9;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 25px;
+        }
+
+        #authLoading.hidden {
+            display: none;
+        }
+
+        #authLoading .loading-box {
+            background: white;
+            padding: 30px 25px;
+            border-radius: 24px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            width: min(90%, 330px);
+        }
+
+        #authLoading img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        #authLoading h2 {
+            margin: 0 0 8px;
+            color: #1a2a6c;
+            font-size: 1.15rem;
+        }
+
+        #authLoading p {
+            margin: 0;
+            color: #777;
+            font-size: 0.85rem;
+        }
+
+        .loader {
+            width: 28px;
+            height: 28px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #6a11cb;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 18px auto 0;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =====================================================
+           OFFLINE OVERLAY
+        ====================================================== */
+
         #offlineOverlay {
             display: none;
             position: fixed;
@@ -224,19 +291,52 @@
 
 <body>
 
+    <!-- =====================================================
+         AUTHENTICATION LOADING SCREEN
+    ====================================================== -->
+
+    <div id="authLoading">
+
+        <div class="loading-box">
+
+            <img
+                src="https://i.postimg.cc/0Qm3PLw5/1771700279759-2.jpg"
+                alt="Flexi Logo"
+            >
+
+            <h2>
+                Checking Admin Session
+            </h2>
+
+            <p>
+                Please wait while we verify your session...
+            </p>
+
+            <div class="loader"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         DASHBOARD
+    ====================================================== -->
+
     <header>
 
         <img
             src="https://i.postimg.cc/0Qm3PLw5/1771700279759-2.jpg"
             alt="Flexi Logo"
-            class="logo">
+            class="logo"
+        >
 
         <h1>
             Flexi Admin Dashboard
         </h1>
 
         <div id="centerBadge">
-            Authenticating Center...
+            Loading Center...
         </div>
 
     </header>
@@ -244,88 +344,59 @@
 
     <main class="dashboard-grid">
 
-        <a
-            href="adminCBT.html"
-            class="card c1">
+        <a href="adminCBT.html" class="card c1">
             Manage Online CBT
         </a>
 
-        <a
-            href="adminexpo.html"
-            class="card c2">
+        <a href="adminexpo.html" class="card c2">
             Upload Expo
         </a>
 
-        <a
-            href="adminlocation.html"
-            class="card c3">
+        <a href="adminlocation.html" class="card c3">
             Manage Locations
         </a>
 
-        <a
-            href="videos.html"
-            class="card c4">
+        <a href="videos.html" class="card c4">
             upload YouTube Videos
         </a>
 
-        <a
-            href="announcement.html"
-            class="card c4">
+        <a href="announcement.html" class="card c4">
             Publish system announcement
         </a>
 
-        <a
-            href="adminpurchase.html"
-            class="card c5">
+        <a href="adminpurchase.html" class="card c5">
             update Cart
         </a>
 
-        <a
-            href="newsupload.html"
-            class="card c6">
+        <a href="newsupload.html" class="card c6">
             Enter Current News Update
         </a>
 
-        <a
-            href="pdf.html"
-            class="card c6">
+        <a href="pdf.html" class="card c6">
             Upload PDFs
         </a>
 
-        <a
-            href="admincenter.html"
-            class="card c6">
+        <a href="admincenter.html" class="card c6">
             My Center Hub
         </a>
 
-        <a
-            href="CBTupdates.html"
-            class="card c7">
+        <a href="CBTupdates.html" class="card c7">
             Check Center CBT updates
         </a>
 
-        <a
-            href="staff.html"
-            class="card c7">
+        <a href="staff.html" class="card c7">
             Tutor Employment
         </a>
 
-        <a
-            href="quote.html"
-            class="card c8">
+        <a href="quote.html" class="card c8">
             Enter Daily Motivational Quotes
         </a>
 
-        <a
-            href="flag.html"
-            class="card c8">
+        <a href="flag.html" class="card c8">
             Review flagged account
         </a>
 
-        <!-- NEW SCHOLARSHIP CARD -->
-        <a
-            href="scholarship.html"
-            class="card c8">
+        <a href="scholarship.html" class="card c8">
             Add Scholarship
         </a>
 
@@ -341,7 +412,10 @@
     </div>
 
 
-    <!-- Offline overlay -->
+    <!-- =====================================================
+         OFFLINE OVERLAY
+    ====================================================== -->
+
     <div id="offlineOverlay">
 
         <div>
@@ -368,6 +442,10 @@
     </div>
 
 
+    <!-- =====================================================
+         FIREBASE AUTHENTICATION
+    ====================================================== -->
+
     <script type="module">
 
         import {
@@ -380,6 +458,10 @@
             signOut
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+
+        /* =====================================================
+           FIREBASE CONFIG
+        ====================================================== */
 
         const firebaseConfig = {
 
@@ -410,110 +492,407 @@
         };
 
 
+        /* =====================================================
+           INITIALIZE FIREBASE
+        ====================================================== */
+
         const app =
             initializeApp(firebaseConfig);
-
 
         const auth =
             getAuth(app);
 
 
-        // ====================================================
-        // SECURITY CHECK
-        // Do NOT redirect to login while offline.
-        // ====================================================
+        /* =====================================================
+           ELEMENTS
+        ====================================================== */
+
+        const authLoading =
+            document.getElementById(
+                "authLoading"
+            );
+
+        const centerBadge =
+            document.getElementById(
+                "centerBadge"
+            );
+
+        const logoutBtn =
+            document.getElementById(
+                "logoutBtn"
+            );
+
+
+        /* =====================================================
+           READ SESSION CREATED BY index.html
+        ====================================================== */
+
+        let adminSession = null;
+
+
+        try {
+
+            const savedSession =
+                sessionStorage.getItem(
+                    "fecAdminSession"
+                );
+
+
+            if (savedSession) {
+
+                adminSession =
+                    JSON.parse(savedSession);
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Unable to read admin session:",
+                error
+            );
+
+        }
+
+
+        /* =====================================================
+           FUNCTION: DISPLAY ADMIN SESSION
+        ====================================================== */
+
+        function displayAdminSession() {
+
+            if (!adminSession) {
+                return;
+            }
+
+
+            const centerName =
+                adminSession.centerName ||
+                "Authorized Center";
+
+
+            const centerID =
+                adminSession.centerID ||
+                "ID-000";
+
+
+            centerBadge.innerText =
+                `${centerName} [${centerID}]`;
+
+        }
+
+
+        /* =====================================================
+           IF SESSION EXISTS, DISPLAY IT IMMEDIATELY
+           
+           This is the key change.
+
+           home.html no longer waits for Firebase before
+           knowing which center is logged in.
+        ====================================================== */
+
+        if (adminSession) {
+
+            displayAdminSession();
+
+        }
+
+
+        /* =====================================================
+           FIREBASE AUTH STATE
+           
+           Firebase is still used for real authentication.
+
+           IMPORTANT:
+           We do NOT immediately redirect simply because the
+           first callback is null.
+
+           We first allow Firebase to restore its session.
+        ====================================================== */
+
+        let authStateChecked = false;
+
 
         onAuthStateChanged(
             auth,
             (user) => {
 
-                if (!user) {
+                authStateChecked = true;
 
-                    if (navigator.onLine) {
 
-                        window.location.href =
-                            "index.html";
+                /* =============================================
+                   AUTHENTICATED
+                ============================================= */
+
+                if (user) {
+
+                    /*
+                     * If Firebase has a user, keep the dashboard
+                     * open and use the session data already passed
+                     * from index.html.
+                     */
+
+                    if (!adminSession) {
+
+                        /*
+                         * Compatibility fallback:
+                         * If an older session exists, use the
+                         * existing sessionStorage/localStorage
+                         * values.
+                         */
+
+                        const centerID =
+                            sessionStorage.getItem(
+                                "centerID"
+                            ) ||
+                            localStorage.getItem(
+                                "centerID"
+                            ) ||
+                            "";
+
+
+                        const centerName =
+                            sessionStorage.getItem(
+                                "centerName"
+                            ) ||
+                            localStorage.getItem(
+                                "centerName"
+                            ) ||
+                            "Authorized Center";
+
+
+                        const adminEmail =
+                            sessionStorage.getItem(
+                                "adminEmail"
+                            ) ||
+                            localStorage.getItem(
+                                "adminEmail"
+                            ) ||
+                            user.email ||
+                            "";
+
+
+                        adminSession = {
+
+                            uid:
+                                user.uid,
+
+                            email:
+                                user.email ||
+                                adminEmail,
+
+                            centerID:
+                                centerID,
+
+                            centerName:
+                                centerName,
+
+                            adminEmail:
+                                adminEmail
+
+                        };
+
+
+                        /*
+                         * Rebuild the complete session so that
+                         * other dashboard pages can use it.
+                         */
+
+                        sessionStorage.setItem(
+                            "fecAdminSession",
+                            JSON.stringify(
+                                adminSession
+                            )
+                        );
 
                     }
 
-                    // If offline, stay on this page
-                    // and let the overlay handle it.
 
-                } else {
-
-                    const centerName =
-                        localStorage.getItem(
-                            'centerName'
-                        ) ||
-                        "Authorized Center";
+                    displayAdminSession();
 
 
-                    const centerID =
-                        localStorage.getItem(
-                            'centerID'
-                        ) ||
-                        "ID-000";
+                    /*
+                     * Authentication is complete.
+                     * Remove loading screen.
+                     */
+
+                    authLoading.classList.add(
+                        "hidden"
+                    );
 
 
-                    document.getElementById(
-                        'centerBadge'
-                    ).innerText =
-                        `${centerName} [${centerID}]`;
+                    return;
+
+                }
+
+
+                /* =============================================
+                   NO FIREBASE USER
+                ============================================= */
+
+                /*
+                 * If there is no Firebase user AND no admin
+                 * session, then this page should not be accessible.
+                 */
+
+                if (!adminSession) {
+
+                    /*
+                     * Only redirect when online.
+                     *
+                     * This prevents the offline situation from
+                     * creating a redirect loop.
+                     */
+
+                    if (navigator.onLine) {
+
+                        window.location.replace(
+                            "index.html"
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+
+                /*
+                 * We have the session from index.html.
+                 *
+                 * Do NOT immediately kick the user out.
+                 *
+                 * Firebase may still be restoring the authenticated
+                 * session.
+                 */
+
+                displayAdminSession();
+
+
+                authLoading.classList.add(
+                    "hidden"
+                );
+
+            }
+        );
+
+
+        /* =====================================================
+           LOGOUT
+        ====================================================== */
+
+        logoutBtn.addEventListener(
+            "click",
+            async () => {
+
+                const confirmed =
+                    confirm(
+                        "Are you sure you want to logout?"
+                    );
+
+
+                if (!confirmed) {
+                    return;
+                }
+
+
+                logoutBtn.disabled = true;
+
+                logoutBtn.innerText =
+                    "Logging out...";
+
+
+                try {
+
+                    /*
+                     * Sign out from Firebase.
+                     */
+
+                    await signOut(auth);
+
+
+                    /*
+                     * Remove the new session.
+                     */
+
+                    sessionStorage.removeItem(
+                        "fecAdminSession"
+                    );
+
+
+                    sessionStorage.removeItem(
+                        "centerID"
+                    );
+
+                    sessionStorage.removeItem(
+                        "centerName"
+                    );
+
+                    sessionStorage.removeItem(
+                        "adminEmail"
+                    );
+
+
+                    /*
+                     * Remove the old compatibility values.
+                     */
+
+                    localStorage.removeItem(
+                        "centerID"
+                    );
+
+                    localStorage.removeItem(
+                        "centerName"
+                    );
+
+                    localStorage.removeItem(
+                        "adminEmail"
+                    );
+
+
+                    /*
+                     * Return to login page.
+                     */
+
+                    window.location.replace(
+                        "index.html"
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Logout error:",
+                        error
+                    );
+
+
+                    alert(
+                        "Logout failed: " +
+                        (
+                            error.message ||
+                            "Please try again."
+                        )
+                    );
+
+
+                    logoutBtn.disabled = false;
+
+                    logoutBtn.innerText =
+                        "Logout System";
 
                 }
 
             }
         );
 
-
-        // ====================================================
-        // LOGOUT LOGIC
-        // ====================================================
-
-        document
-            .getElementById('logoutBtn')
-            .addEventListener(
-                'click',
-                () => {
-
-                    if (
-                        confirm(
-                            "Are you sure you want to logout?"
-                        )
-                    ) {
-
-                        signOut(auth)
-                            .then(() => {
-
-                                localStorage.clear();
-
-                                window.location.href =
-                                    "index.html";
-
-                            })
-                            .catch((error) => {
-
-                                console.error(
-                                    "Logout error:",
-                                    error
-                                );
-
-                            });
-
-                    }
-
-                }
-            );
-
     </script>
 
 
-    <script>
+    <!-- =====================================================
+         OFFLINE HANDLING
+    ====================================================== -->
 
-        // ====================================================
-        // OFFLINE HANDLING
-        // No page navigation / no history trap
-        // ====================================================
+    <script>
 
         const overlay =
             document.getElementById(
@@ -578,6 +957,13 @@
 
                     hideOffline();
 
+                    /*
+                     * Reload only when the user actually has
+                     * internet again.
+                     */
+
+                    window.location.reload();
+
                 } else {
 
                     retryBtn.innerText =
@@ -600,7 +986,6 @@
         );
 
 
-        // Run once on load
         checkOnline();
 
     </script>
