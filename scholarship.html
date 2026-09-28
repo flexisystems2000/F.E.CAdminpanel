@@ -584,27 +584,7 @@
 </main>
 
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
-
 <script>
-
-const firebaseConfig = {
-    apiKey: "AIzaSyA0B5m6pk1T1peGSS7quvFPEMOMuplnNRNM",
-    authDomain: "waec2026jamb2027.firebaseapp.com",
-    databaseURL: "https://waec2026jamb2027-default-rtdb.firebaseio.com",
-    projectId: "waec2026jamb2027",
-    storageBucket: "waec2026jamb2027.firebasestorage.app",
-    messagingSenderId: "465373608641",
-    appId: "1:465373608641:web:03d21cead99a3c9b65f240",
-    measurementId: "G-XD6YTGGC30"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const auth = firebase.auth();
-
 
 /* =========================================================
    SUPABASE
@@ -651,186 +631,6 @@ const cancelEditBtn =
 
 
 let scholarships = [];
-
-
-/* =========================================================
-   ADMIN SESSION
-========================================================= */
-
-/*
- * index.html creates this session after:
- *
- * 1. Firebase login
- * 2. Firestore admins/{uid} lookup
- *
- * We read it here before Firebase's auth-state callback.
- *
- * This prevents the old immediate redirect loop.
- */
-
-let adminSession = null;
-
-try {
-
-    const savedSession =
-        sessionStorage.getItem("fecAdminSession");
-
-    if (savedSession) {
-
-        adminSession =
-            JSON.parse(savedSession);
-
-    }
-
-} catch (error) {
-
-    console.error(
-        "Could not read F.E.C admin session:",
-        error
-    );
-
-}
-
-
-/* =========================================================
-   AUTHENTICATION
-========================================================= */
-
-/*
- * IMPORTANT:
- *
- * The old code immediately redirected to index.html whenever
- * Firebase temporarily returned null.
- *
- * That is what caused:
- *
- * home.html
- *     ↓
- * scholarship.html
- *     ↓
- * Firebase still restoring session
- *     ↓
- * user === null
- *     ↓
- * index.html
- *
- * We now allow the session created by index.html to keep the
- * page open while Firebase restores its authentication state.
- */
-
-let firebaseAuthChecked = false;
-
-
-auth.onAuthStateChanged(function(user) {
-
-    firebaseAuthChecked = true;
-
-
-    /* =====================================================
-       FIREBASE USER EXISTS
-    ====================================================== */
-
-    if (user) {
-
-        /*
-         * Firebase authentication is confirmed.
-         *
-         * The session created by index.html is still used
-         * for the admin/center information.
-         */
-
-        if (!adminSession) {
-
-            /*
-             * Compatibility fallback for an older session.
-             */
-
-            const centerID =
-                sessionStorage.getItem("centerID") ||
-                localStorage.getItem("centerID") ||
-                "";
-
-            const centerName =
-                sessionStorage.getItem("centerName") ||
-                localStorage.getItem("centerName") ||
-                "Authorized Center";
-
-            const adminEmail =
-                sessionStorage.getItem("adminEmail") ||
-                localStorage.getItem("adminEmail") ||
-                user.email ||
-                "";
-
-
-            adminSession = {
-
-                uid:
-                    user.uid,
-
-                email:
-                    user.email ||
-                    adminEmail,
-
-                centerID:
-                    centerID,
-
-                centerName:
-                    centerName,
-
-                adminEmail:
-                    adminEmail
-
-            };
-
-
-            sessionStorage.setItem(
-                "fecAdminSession",
-                JSON.stringify(adminSession)
-            );
-
-        }
-
-
-        loadScholarships();
-
-        return;
-    }
-
-
-    /* =====================================================
-       NO FIREBASE USER
-    ====================================================== */
-
-    /*
-     * If we already have the authenticated admin session
-     * created by index.html, DON'T redirect immediately.
-     *
-     * Firebase can still be restoring its persisted state.
-     */
-
-    if (adminSession) {
-
-        loadScholarships();
-
-        return;
-    }
-
-
-    /*
-     * No Firebase user AND no admin session.
-     *
-     * Only in this case do we return to login.
-     */
-
-    if (navigator.onLine) {
-
-        window.location.replace(
-            "index.html"
-        );
-
-    }
-
-});
 
 
 /* =========================================================
@@ -1677,7 +1477,13 @@ window.addEventListener(
     }
 );
 
-</script>
 
+/* =========================================================
+   INITIAL LOAD
+========================================================= */
+
+loadScholarships();
+
+</script>
 </body>
 </html>
