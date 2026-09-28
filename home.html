@@ -3,18 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Dashboard | Flexi Educational Consult</title>
-
     <style>
         :root {
             --primary-bg: #f4f7f9;
             --text-dark: #1a2a6c;
             --accent-purple: #6a11cb;
-        }
-
-        * {
-            box-sizing: border-box;
         }
 
         body {
@@ -90,42 +84,14 @@
             opacity: 0.9;
         }
 
-        .c1 {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-        }
-
-        .c2 {
-            background: linear-gradient(135deg, #483d8b 0%, #6a5acd 100%);
-        }
-
-        .c3 {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        }
-
-        .c4 {
-            background: linear-gradient(135deg, #7028e4 0%, #e5b2ca 100%);
-        }
-
-        .c5 {
-            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
-        }
-
-        .c6 {
-            background: linear-gradient(135deg, #5f72bd 0%, #9b23ea 100%);
-        }
-
-        .c7 {
-            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
-        }
-
-        .c8 {
-            background: linear-gradient(135deg, #373b44 0%, #4286f4 100%);
-        }
-
-        /* Scholarship card */
-        .scholarship-card {
-            background: linear-gradient(135deg, #00695c 0%, #2e8b57 100%);
-        }
+        .c1 { background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); }
+        .c2 { background: linear-gradient(135deg, #483d8b 0%, #6a5acd 100%); }
+        .c3 { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        .c4 { background: linear-gradient(135deg, #7028e4 0%, #e5b2ca 100%); }
+        .c5 { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); }
+        .c6 { background: linear-gradient(135deg, #5f72bd 0%, #9b23ea 100%); }
+        .c7 { background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%); }
+        .c8 { background: linear-gradient(135deg, #373b44 0%, #4286f4 100%); }
 
         .logout-section {
             margin-top: 40px;
@@ -145,71 +111,7 @@
             transition: 0.3s;
         }
 
-        #logoutBtn:hover {
-            background: #feebeb;
-        }
-
-        #logoutBtn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* Authentication loading screen */
-        #authLoading {
-            position: fixed;
-            inset: 0;
-            background: #f4f7f9;
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 25px;
-        }
-
-        #authLoading .loading-box {
-            background: white;
-            padding: 30px 25px;
-            border-radius: 24px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            width: min(90%, 330px);
-        }
-
-        #authLoading img {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        #authLoading h2 {
-            margin: 0 0 8px;
-            color: #1a2a6c;
-            font-size: 1.15rem;
-        }
-
-        #authLoading p {
-            margin: 0;
-            color: #777;
-            font-size: 0.85rem;
-        }
-
-        .loader {
-            width: 28px;
-            height: 28px;
-            border: 3px solid #e5e7eb;
-            border-top-color: #6a11cb;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 18px auto 0;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        #logoutBtn:hover { background: #feebeb; }
 
         /* Offline overlay */
         #offlineOverlay {
@@ -226,10 +128,8 @@
         }
 
         #offlineOverlay .icon {
-            width: 52px;
-            height: 52px;
-            margin: 0 auto 16px;
-            color: #075E54;
+            font-size: 48px;
+            margin-bottom: 16px;
         }
 
         #offlineOverlay h2 {
@@ -262,573 +162,127 @@
         }
     </style>
 </head>
-
 <body>
 
-    <!-- =====================================================
-         AUTHENTICATION LOADING SCREEN
-    ====================================================== -->
-
-    <div id="authLoading">
-
-        <div class="loading-box">
-
-            <img
-                src="https://i.postimg.cc/0Qm3PLw5/1771700279759-2.jpg"
-                alt="Flexi Logo"
-            >
-
-            <h2>Checking Admin Session</h2>
-
-            <p>
-                Please wait while we verify your login...
-            </p>
-
-            <div class="loader"></div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         DASHBOARD
-    ====================================================== -->
-
     <header>
-
-        <img
-            src="https://i.postimg.cc/0Qm3PLw5/1771700279759-2.jpg"
-            alt="Flexi Logo"
-            class="logo"
-        >
-
+        <img src="https://i.postimg.cc/0Qm3PLw5/1771700279759-2.jpg" alt="Flexi Logo" class="logo">
         <h1>Flexi Admin Dashboard</h1>
-
-        <div id="centerBadge">
-            Authenticating Center...
-        </div>
-
+        <div id="centerBadge">Authenticating Center...</div>
     </header>
 
-
     <main class="dashboard-grid">
-
-        <a href="adminCBT.html" class="card c1">
-            Manage Online CBT
-        </a>
-
-        <a href="adminexpo.html" class="card c2">
-            Upload Expo
-        </a>
-
-        <a href="adminlocation.html" class="card c3">
-            Manage Locations
-        </a>
-
-        <a href="videos.html" class="card c4">
-            Upload YouTube Videos
-        </a>
-
-        <a href="announcement.html" class="card c4">
-            Publish System Announcement
-        </a>
-
-        <a href="adminpurchase.html" class="card c5">
-            Update Cart
-        </a>
-
-        <a href="newsupload.html" class="card c6">
-            Enter Current News Update
-        </a>
-
-        <a href="pdf.html" class="card c6">
-            Upload PDFs
-        </a>
-
-        <a href="admincenter.html" class="card c6">
-            My Center Hub
-        </a>
-
-        <a href="CBTupdates.html" class="card c7">
-            Check Center CBT Updates
-        </a>
-
-        <a href="staff.html" class="card c7">
-            Tutor Employment
-        </a>
-
-        <a href="quote.html" class="card c8">
-            Enter Daily Motivational Quotes
-        </a>
-
-        <a href="flag.html" class="card c8">
-            Review Flagged Account
-        </a>
-
-        <!-- ADD SCHOLARSHIP -->
-
-        <a
-            href="scholarship.html"
-            class="card scholarship-card"
-        >
-            Add Scholarship
-        </a>
-
+        <a href="adminCBT.html" class="card c1">Manage Online CBT</a>
+        <a href="adminexpo.html" class="card c2">Upload Expo</a>
+        <a href="adminlocation.html" class="card c3">Manage Locations</a>
+        <a href="videos.html" class="card c4">upload YouTube Videos</a>
+        <a href="announcement.html" class="card c4">Publish system announcement</a>
+        <a href="adminpurchase.html" class="card c5">update Cart</a>
+        <a href="newsupload.html" class="card c6">Enter Current News Update</a>
+        <a href="pdf.html" class="card c6">Upload PDFs</a>
+        <a href="admincenter.html" class="card c6">My Center Hub</a>
+        <a href="CBTupdates.html" class="card c7">Check Center CBT updates</a>
+        <a href="staff.html" class="card c7">Tutor Employment</a>
+        <a href="quote.html" class="card c8">Enter Daily Motivational Quotes</a>
+        <a href="flag.html" class="card c8">Review flagged account</a>
     </main>
 
-
-    <!-- =====================================================
-         LOGOUT
-    ====================================================== -->
-
     <div class="logout-section">
-
-        <button
-            id="logoutBtn"
-            type="button"
-        >
-            Logout System
-        </button>
-
+        <button id="logoutBtn">Logout System</button>
     </div>
 
-
-    <!-- =====================================================
-         OFFLINE OVERLAY
-    ====================================================== -->
-
+    <!-- Offline overlay (stays on same page – no history trap) -->
     <div id="offlineOverlay">
-
         <div>
-
-            <div class="icon">
-
-                <svg
-                    width="52"
-                    height="52"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                >
-                    <path d="M1 9a16 16 0 0 1 22 0"></path>
-                    <path d="M4 12.5a11.5 11.5 0 0 1 16 0"></path>
-                    <path d="M7.5 16a7 7 0 0 1 9 0"></path>
-                    <path d="M12 20h.01"></path>
-                    <path d="M3 3l18 18"></path>
-                </svg>
-
-            </div>
-
-            <h2>
-                You're Offline
-            </h2>
-
+            <div class="icon">📡</div>
+            <h2>You're Offline</h2>
             <p>
                 Please check your internet connection<br>
                 and try again.
             </p>
-
-            <button
-                id="offlineRetryBtn"
-                type="button"
-            >
-                Try Again
-            </button>
-
+            <button id="offlineRetryBtn">🔄 Try Again</button>
         </div>
-
     </div>
 
-
-    <!-- =====================================================
-         FIREBASE AUTHENTICATION
-    ====================================================== -->
-
     <script type="module">
-
-        import {
-            initializeApp
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
-        import {
-            getAuth,
-            onAuthStateChanged,
-            signOut
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-
-        /* =====================================================
-           FIREBASE CONFIG
-        ===================================================== */
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
-
-            apiKey:
-                "AIzaSyA0bM6pk1T1peGSS7qufVPEMOMuplnNRNM",
-
-            authDomain:
-                "waec2026jamb2027.firebaseapp.com",
-
-            databaseURL:
-                "https://waec2026jamb2027-default-rtdb.firebaseio.com",
-
-            projectId:
-                "waec2026jamb2027",
-
-            storageBucket:
-                "waec2026jamb2027.firebasestorage.app",
-
-            messagingSenderId:
-                "465373608641",
-
-            appId:
-                "1:465373608641:web:03d21cead99a3c9b65f240",
-
-            measurementId:
-                "G-XD6YTGGC30"
-
+            apiKey: "AIzaSyA0bM6pk1T1peGSS7quvFPEMOMuplnNRNM",
+            authDomain: "waec2026jamb2027.firebaseapp.com",
+            databaseURL: "https://waec2026jamb2027-default-rtdb.firebaseio.com",
+            projectId: "waec2026jamb2027",
+            storageBucket: "waec2026jamb2027.firebasestorage.app",
+            messagingSenderId: "465373608641",
+            appId: "1:465373608641:web:03d21cead99a3c9b65f240",
+            measurementId: "G-XD6YTGGC30"
         };
 
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-        /* =====================================================
-           INITIALIZE FIREBASE
-        ===================================================== */
-
-        const app =
-            initializeApp(firebaseConfig);
-
-        const auth =
-            getAuth(app);
-
-
-        const authLoading =
-            document.getElementById(
-                "authLoading"
-            );
-
-        const centerBadge =
-            document.getElementById(
-                "centerBadge"
-            );
-
-        const logoutBtn =
-            document.getElementById(
-                "logoutBtn"
-            );
-
-
-        /*
-         * Prevent the dashboard from making a decision
-         * before Firebase has restored the existing session.
-         *
-         * This is the important change.
-         */
-
-        let authCheckCompleted = false;
-
-
-        onAuthStateChanged(
-            auth,
-            (user) => {
-
-                /*
-                 * Firebase has now finished checking
-                 * the authentication state.
-                 */
-
-                authCheckCompleted = true;
-
-
-                /*
-                 * USER NOT LOGGED IN
-                 */
-
-                if (!user) {
-
-                    /*
-                     * If there is no internet connection,
-                     * don't throw the user out of the page.
-                     */
-
-                    if (!navigator.onLine) {
-
-                        authLoading.style.display =
-                            "none";
-
-                        return;
-                    }
-
-
-                    /*
-                     * Only redirect AFTER Firebase has
-                     * actually confirmed that there is
-                     * no authenticated user.
-                     */
-
-                    window.location.replace(
-                        "index.html"
-                    );
-
-                    return;
+        // Security check – do NOT redirect to login while offline
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                if (navigator.onLine) {
+                    window.location.href = "index.html";
                 }
-
-
-                /*
-                 * USER IS AUTHENTICATED
-                 */
-
-                const centerName =
-                    localStorage.getItem(
-                        "centerName"
-                    ) ||
-                    "Authorized Center";
-
-
-                const centerID =
-                    localStorage.getItem(
-                        "centerID"
-                    ) ||
-                    "ID-000";
-
-
-                centerBadge.innerText =
-                    centerName +
-                    " [" +
-                    centerID +
-                    "]";
-
-
-                /*
-                 * Remove authentication loading screen.
-                 */
-
-                authLoading.style.display =
-                    "none";
-
-
-                /*
-                 * Enable logout button.
-                 */
-
-                logoutBtn.disabled =
-                    false;
-
+                // If offline, stay on this page and let the overlay handle it
+            } else {
+                const centerName = localStorage.getItem('centerName') || "Authorized Center";
+                const centerID = localStorage.getItem('centerID') || "ID-000";
+                document.getElementById('centerBadge').innerText = `\( {centerName} [ \){centerID}]`;           
             }
-        );
+        });
 
-
-        /* =====================================================
-           LOGOUT
-        ===================================================== */
-
-        logoutBtn.disabled = true;
-
-        logoutBtn.addEventListener(
-            "click",
-            async () => {
-
-                const confirmed =
-                    confirm(
-                        "Are you sure you want to logout?"
-                    );
-
-
-                if (!confirmed) {
-                    return;
-                }
-
-
-                logoutBtn.disabled =
-                    true;
-
-                logoutBtn.innerText =
-                    "Logging out...";
-
-
-                try {
-
-                    await signOut(auth);
-
-
-                    /*
-                     * Clear locally stored center
-                     * information only after successful
-                     * Firebase logout.
-                     */
-
-                    localStorage.removeItem(
-                        "centerID"
-                    );
-
-                    localStorage.removeItem(
-                        "centerName"
-                    );
-
-                    localStorage.removeItem(
-                        "adminEmail"
-                    );
-
-
-                    window.location.replace(
-                        "index.html"
-                    );
-
-                } catch (error) {
-
-                    console.error(
-                        "Logout error:",
-                        error
-                    );
-
-
-                    logoutBtn.disabled =
-                        false;
-
-                    logoutBtn.innerText =
-                        "Logout System";
-
-
-                    alert(
-                        "Logout failed. Please try again."
-                    );
-
-                }
-
+        // Logout logic
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (confirm("Are you sure you want to logout?")) {
+                signOut(auth).then(() => {
+                    localStorage.clear();
+                    window.location.href = "index.html";
+                });
             }
-        );
-
+        });
     </script>
 
-
-    <!-- =====================================================
-         OFFLINE HANDLING
-    ====================================================== -->
-
     <script>
-
-        const overlay =
-            document.getElementById(
-                "offlineOverlay"
-            );
-
-
-        const retryBtn =
-            document.getElementById(
-                "offlineRetryBtn"
-            );
-
+        // ========== OFFLINE HANDLING (no page navigation) ==========
+        const overlay = document.getElementById("offlineOverlay");
+        const retryBtn = document.getElementById("offlineRetryBtn");
 
         function showOffline() {
-
-            overlay.style.display =
-                "flex";
-
+            overlay.style.display = "flex";
         }
-
 
         function hideOffline() {
-
-            overlay.style.display =
-                "none";
-
+            overlay.style.display = "none";
         }
-
 
         function checkOnline() {
-
             if (navigator.onLine) {
-
                 hideOffline();
-
             } else {
-
                 showOffline();
-
             }
-
         }
 
+        window.addEventListener("offline", showOffline);
+        window.addEventListener("online", hideOffline);
 
-        /*
-         * Internet disconnected.
-         */
-
-        window.addEventListener(
-            "offline",
-            () => {
-
-                showOffline();
-
-            }
-        );
-
-
-        /*
-         * Internet restored.
-         */
-
-        window.addEventListener(
-            "online",
-            () => {
-
+        retryBtn.addEventListener("click", () => {
+            if (navigator.onLine) {
                 hideOffline();
-
+            } else {
+                retryBtn.innerText = "Still offline...";
+                setTimeout(() => {
+                    retryBtn.innerText = "🔄 Try Again";
+                }, 1200);
             }
-        );
+        });
 
-
-        /*
-         * Retry button.
-         */
-
-        retryBtn.addEventListener(
-            "click",
-            () => {
-
-                if (navigator.onLine) {
-
-                    hideOffline();
-
-                    /*
-                     * Reload only when the user
-                     * explicitly asks to retry.
-                     */
-
-                    window.location.reload();
-
-                } else {
-
-                    retryBtn.innerText =
-                        "Still offline...";
-
-
-                    setTimeout(
-                        () => {
-
-                            retryBtn.innerText =
-                                "Try Again";
-
-                        },
-                        1200
-                    );
-
-                }
-
-            }
-        );
-
-
-        /*
-         * Initial network check.
-         */
-
+        // Run once on load
         checkOnline();
-
     </script>
 
 </body>
